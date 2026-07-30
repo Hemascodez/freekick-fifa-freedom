@@ -332,43 +332,21 @@
      6. ORGANISER PANEL
      ========================================================================== */
 
+  /* The organiser dashboard opens directly — no passcode. To gate it later,
+     set EVENT.ADMIN_PASSCODE and restore a check here. */
   U.openAdmin = function () {
     AUDIO.menuSelect();
+    this.adminUnlocked = true;
     this.showScreen('admin');
     this.g.setState(S.HIGH_SCORES);
     this.syncAdminLock();
-    if (this.adminUnlocked) this.refreshAdmin();
-    else {
-      const f = $('admPass');
-      if (f) { f.value = ''; setTimeout(() => f.focus(), 60); }
-    }
+    this.refreshAdmin();
   };
 
-  /** show either the passcode gate or the panel itself */
   U.syncAdminLock = function () {
     const lock = $('admLock'), body = $('admBody');
-    if (lock) lock.style.display = this.adminUnlocked ? 'none' : 'block';
-    if (body) body.style.display = this.adminUnlocked ? 'block' : 'none';
-  };
-
-  U.tryAdminUnlock = function () {
-    const f = $('admPass');
-    const msg = $('admLockMsg');
-    const val = f ? String(f.value).trim().toUpperCase() : '';
-    if (val === EVENT.ADMIN_PASSCODE) {
-      this.adminUnlocked = true;
-      if (msg) { msg.textContent = ''; msg.className = 'adm-status'; }
-      AUDIO.menuSelect();
-      this.syncAdminLock();
-      this.refreshAdmin();
-    } else {
-      AUDIO.error();
-      if (msg) {
-        msg.textContent = val ? 'Incorrect passcode.' : 'Enter the organiser passcode.';
-        msg.className = 'adm-status offline';
-      }
-      if (f) f.select();
-    }
+    if (lock) lock.style.display = 'none';
+    if (body) body.style.display = 'block';
   };
 
   /** in-page message line, replacing window.alert */
@@ -609,12 +587,6 @@
 
     /* organiser */
     click('btnWelcomeAdmin', () => { AUDIO.onUserGesture(); this.openAdmin(); });
-    click('btnAdmUnlock', () => this.tryAdminUnlock());
-    const pf = $('admPass');
-    if (pf) pf.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); this.tryAdminUnlock(); }
-    });
-
     click('btnAdmBack', () => {
       AUDIO.menuSelect();
       this.showScreen('welcome');
@@ -695,7 +667,7 @@
     origHydrate.call(this, prefs);
     this.lbTab = 'players';
     this.cachedScores = [];
-    this.adminUnlocked = false;
+    this.adminUnlocked = true;
     this.setLbTab('players');
 
     /* pull the shared bracket, then paint everything that depends on it */

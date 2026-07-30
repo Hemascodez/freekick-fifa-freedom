@@ -148,6 +148,11 @@
         <button class="hud-btn" id="btnQuit" type="button">MENU</button>
       </div>
 
+      <div id="specLabels" class="spec-labels" aria-hidden="true"></div>
+      <div id="turnBanner" class="turn-banner" role="status"></div>
+
+      <aside id="roomBoard" class="room-board" aria-label="Live room scoreboard"></aside>
+
       <div id="tip" role="status"></div>
 
       <div id="aimBar">
@@ -266,19 +271,7 @@
     <div class="panel wide">
       <h2 class="panel-title" id="admTitle">⚙ ORGANISER — MATCH CONTROL</h2>
 
-      <div id="admLock">
-        <p class="small muted">This panel controls the live tournament. Enter the organiser passcode to continue.</p>
-        <div class="adm-row">
-          <div class="adm-field grow">
-            <label class="field-label" for="admPass">Organiser passcode</label>
-            <input type="password" id="admPass" class="adm-input" autocomplete="off" placeholder="passcode">
-          </div>
-          <button class="btn" id="btnAdmUnlock" type="button">UNLOCK</button>
-        </div>
-        <p class="adm-status" id="admLockMsg"></p>
-      </div>
-
-      <div id="admBody" style="display:none">
+      <div id="admBody">
       <p class="adm-msg" id="admMsg"></p>
 
       <div class="adm-block">
@@ -449,6 +442,8 @@ create policy "edit rooms"     on rooms      for update using (true);</pre>
           </table>
         </div>
 
+        <div id="roomFinal" class="room-final"></div>
+
         <div class="row mt" id="roomActions"></div>
         <p class="adm-msg" id="roomMsg2"></p>
       </div>
@@ -458,6 +453,9 @@ create policy "edit rooms"     on rooms      for update using (true);</pre>
       </div>
     </div>
   </section>
+
+  <button id="btnMuteGlobal" class="mute-global" type="button"
+          aria-pressed="false" aria-label="Sound is on. Mute sound" title="Sound on — click to mute (M)">🔊</button>
 
   <div id="crt" aria-hidden="true"></div>
   <div id="flicker" aria-hidden="true"></div>
@@ -470,5 +468,7 @@ create policy "edit rooms"     on rooms      for update using (true);</pre>
 <script src="event-ui.js"></script>
 <script src="multiplayer.js"></script>
 <script src="room-ui.js"></script>
+<script src="room-live.js"></script>
+<script src="sound.js"></script>
 </body>
 </html>

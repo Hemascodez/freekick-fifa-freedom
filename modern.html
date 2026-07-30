@@ -1168,6 +1168,11 @@ kbd {
         <button class="hud-btn" id="btnQuit" type="button">MENU</button>
       </div>
 
+      <div id="specLabels" class="spec-labels" aria-hidden="true"></div>
+      <div id="turnBanner" class="turn-banner" role="status"></div>
+
+      <aside id="roomBoard" class="room-board" aria-label="Live room scoreboard"></aside>
+
       <div id="tip" role="status"></div>
 
       <div id="aimBar">
@@ -1286,19 +1291,7 @@ kbd {
     <div class="panel wide">
       <h2 class="panel-title" id="admTitle">⚙ ORGANISER — MATCH CONTROL</h2>
 
-      <div id="admLock">
-        <p class="small muted">This panel controls the live tournament. Enter the organiser passcode to continue.</p>
-        <div class="adm-row">
-          <div class="adm-field grow">
-            <label class="field-label" for="admPass">Organiser passcode</label>
-            <input type="password" id="admPass" class="adm-input" autocomplete="off" placeholder="passcode">
-          </div>
-          <button class="btn" id="btnAdmUnlock" type="button">UNLOCK</button>
-        </div>
-        <p class="adm-status" id="admLockMsg"></p>
-      </div>
-
-      <div id="admBody" style="display:none">
+      <div id="admBody">
       <p class="adm-msg" id="admMsg"></p>
 
       <div class="adm-block">
@@ -1469,6 +1462,8 @@ create policy "edit rooms"     on rooms      for update using (true);</pre>
           </table>
         </div>
 
+        <div id="roomFinal" class="room-final"></div>
+
         <div class="row mt" id="roomActions"></div>
         <p class="adm-msg" id="roomMsg2"></p>
       </div>
@@ -1478,6 +1473,9 @@ create policy "edit rooms"     on rooms      for update using (true);</pre>
       </div>
     </div>
   </section>
+
+  <button id="btnMuteGlobal" class="mute-global" type="button"
+          aria-pressed="false" aria-label="Sound is on. Mute sound" title="Sound on — click to mute (M)">🔊</button>
 
   <div id="crt" aria-hidden="true"></div>
   <div id="flicker" aria-hidden="true"></div>
@@ -6011,43 +6009,21 @@ const TOURNEY = new Tournament();
      6. ORGANISER PANEL
      ========================================================================== */
 
+  /* The organiser dashboard opens directly — no passcode. To gate it later,
+     set EVENT.ADMIN_PASSCODE and restore a check here. */
   U.openAdmin = function () {
     AUDIO.menuSelect();
+    this.adminUnlocked = true;
     this.showScreen('admin');
     this.g.setState(S.HIGH_SCORES);
     this.syncAdminLock();
-    if (this.adminUnlocked) this.refreshAdmin();
-    else {
-      const f = $('admPass');
-      if (f) { f.value = ''; setTimeout(() => f.focus(), 60); }
-    }
+    this.refreshAdmin();
   };
 
-  /** show either the passcode gate or the panel itself */
   U.syncAdminLock = function () {
     const lock = $('admLock'), body = $('admBody');
-    if (lock) lock.style.display = this.adminUnlocked ? 'none' : 'block';
-    if (body) body.style.display = this.adminUnlocked ? 'block' : 'none';
-  };
-
-  U.tryAdminUnlock = function () {
-    const f = $('admPass');
-    const msg = $('admLockMsg');
-    const val = f ? String(f.value).trim().toUpperCase() : '';
-    if (val === EVENT.ADMIN_PASSCODE) {
-      this.adminUnlocked = true;
-      if (msg) { msg.textContent = ''; msg.className = 'adm-status'; }
-      AUDIO.menuSelect();
-      this.syncAdminLock();
-      this.refreshAdmin();
-    } else {
-      AUDIO.error();
-      if (msg) {
-        msg.textContent = val ? 'Incorrect passcode.' : 'Enter the organiser passcode.';
-        msg.className = 'adm-status offline';
-      }
-      if (f) f.select();
-    }
+    if (lock) lock.style.display = 'none';
+    if (body) body.style.display = 'block';
   };
 
   /** in-page message line, replacing window.alert */
@@ -6288,12 +6264,6 @@ const TOURNEY = new Tournament();
 
     /* organiser */
     click('btnWelcomeAdmin', () => { AUDIO.onUserGesture(); this.openAdmin(); });
-    click('btnAdmUnlock', () => this.tryAdminUnlock());
-    const pf = $('admPass');
-    if (pf) pf.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); this.tryAdminUnlock(); }
-    });
-
     click('btnAdmBack', () => {
       AUDIO.menuSelect();
       this.showScreen('welcome');
@@ -6374,7 +6344,7 @@ const TOURNEY = new Tournament();
     origHydrate.call(this, prefs);
     this.lbTab = 'players';
     this.cachedScores = [];
-    this.adminUnlocked = false;
+    this.adminUnlocked = true;
     this.setLbTab('players');
 
     /* pull the shared bracket, then paint everything that depends on it */
@@ -7064,6 +7034,419 @@ const SESSION = new RoomSession();
 /* Solo vs team routing lives in event.js submitEventScore, which checks
    game.mode directly — a wrapper here could not stop its live-match
    fallback from re-attaching the match id. */
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — LIVE ROOM PLAY
+   room-live.js
+   --------------------------------------------------------------------------
+   Everything that makes a friendly match feel shared:
+     • every player in the room is drawn beside the pitch as a spectator,
+       with a nameplate showing name, kit, score and status
+     • the active shooter is highlighted; everyone else waits in a side zone
+     • a live scoreboard panel next to the field, ranked, updating after
+       every single attempt (not just at the end of a turn)
+     • a final results screen with rankings, team totals and a winner
+   ========================================================================== */
+'use strict';
+
+(function roomLive() {
+
+  /* ==========================================================================
+     1. PER-ATTEMPT LIVE SYNC
+     ========================================================================== */
+
+  /** push my running progress so the rest of the room sees it immediately */
+  RoomSession.prototype.updateProgress = function (patch) {
+    if (!this.state) return Promise.resolve();
+    const cur = this.currentPlayer;
+    if (!cur) return Promise.resolve();
+    Object.assign(cur, patch);
+    return this.push();
+  };
+
+  const G = Game.prototype;
+
+  /* after every attempt in a room match, publish the running total */
+  const origFinish = G.finishShot;
+  G.finishShot = function (res) {
+    origFinish.call(this, res);
+    if (this.mode === 'room' && SESSION.active) {
+      SESSION.updateProgress({
+        score: this.board.score,
+        goals: this.board.goals,
+        attempts: this.board.attempt,
+        left: this.board.kicksLeft,
+        status: this.board.kicksLeft > 0 ? 'playing' : 'finished',
+        lastOutcome: res.outcome,
+      }).then(() => this.ui.renderRoomScoreboard());
+      this.ui.renderRoomScoreboard();
+    }
+  };
+
+  /* the moment a turn begins, mark the shooter as live */
+  const origStart = G.startMatch;
+  G.startMatch = function (name, teamId) {
+    const r = origStart.call(this, name, teamId);
+    if (this.mode === 'room' && SESSION.active) {
+      SESSION.updateProgress({ status: 'playing', left: CFG.ATTEMPTS, attempts: 0 });
+      this.ui.renderRoomScoreboard();
+    }
+    return r;
+  };
+
+  /* ==========================================================================
+     2. SPECTATORS ON THE FIELD
+     ========================================================================== */
+
+  /**
+   * Waiting players stand in two arcs behind the free-kick spot, well clear
+   * of the ball and the shooting lane so they never block the view.
+   */
+  function spectatorSpot(i, total) {
+    const side = i % 2 === 0 ? -1 : 1;          // alternate left / right
+    const rank = Math.floor(i / 2);
+    return {
+      x: side * (4.6 + rank * 1.9),
+      z: CFG.BALL_Z + 1.6 + (rank % 2) * 1.5,
+    };
+  }
+
+  const origDraw = G.draw;
+  G.draw = function (dt) {
+    origDraw.call(this, dt);
+    if (this.mode !== 'room' || !SESSION.active) return;
+    if (!IN_MATCH[this.state] && this.state !== S.FINAL_RESULTS) return;
+
+    const R = this.renderer;
+    const cur = SESSION.currentPlayer;
+    const others = SESSION.players.filter((p) => !cur || p.id !== cur.id);
+
+    others.forEach((p, i) => {
+      const spot = spectatorSpot(i, others.length);
+      const t = teamById(p.teamId);
+      const kit = {
+        shirt: t.primary, shirt2: t.secondary, accent: t.accent,
+        shorts: t.shorts, socks: t.socks, pattern: t.pattern,
+        skin: '#c98a5a', hair: '#241a12',
+      };
+      R.shadow(spot.x, spot.z, 0.55);
+      const pose = p.status === 'finished' ? 'idle' : 'ready';
+      R.drawPlayer(spot.x, spot.z, kit, pose, this.time + i * 0.7, spot.x > 0);
+    });
+  };
+
+  /* ==========================================================================
+     3. LIVE SCOREBOARD BESIDE THE FIELD
+     ========================================================================== */
+
+  const U = UI.prototype;
+
+  /**
+   * Nameplates are real DOM text, positioned as a percentage of the canvas
+   * box, so they stay pin-sharp at any scale and need no per-frame updates.
+   */
+  U.renderSpectatorLabels = function () {
+    const host = $('specLabels');
+    if (!host) return;
+    const on = this.g.mode === 'room' && SESSION.active &&
+               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
+    if (!on) { host.innerHTML = ''; return; }
+
+    const cur = SESSION.currentPlayer;
+    const others = SESSION.players.filter((p) => !cur || p.id !== cur.id);
+    host.innerHTML = others.map((p, i) => {
+      const spot = spectatorSpot(i, others.length);
+      const q = proj(spot.x, 2.5, spot.z);
+      const t = teamById(p.teamId);
+      const state = (p.status === 'finished' || p.done) ? 'finished'
+        : p.status === 'playing' ? 'playing' : 'waiting';
+      const meta = state === 'finished' ? (p.score || 0) + ' PTS · ' + (p.goals || 0) + 'G'
+        : state === 'playing' ? 'SHOOTING' : 'WAITING';
+      return '<div class="spec-label ' + state + '" style="left:' +
+        (q.x / CFG.W * 100).toFixed(2) + '%;top:' + (q.y / CFG.H * 100).toFixed(2) +
+        '%;border-top-color:' + t.primary + '">' +
+        '<span class="sl-name">' + escapeHtml(p.name) + '</span>' +
+        '<span class="sl-meta">' + meta + '</span></div>';
+    }).join('');
+  };
+
+  /** a clear statement of whose turn it is, for shooter and spectators alike */
+  U.renderTurnBanner = function () {
+    const el = $('turnBanner');
+    if (!el) return;
+    const st = SESSION.state;
+    const on = this.g.mode === 'room' && SESSION.active && st && st.status === 'playing' &&
+               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
+    el.classList.toggle('show', !!on);
+    if (!on) return;
+
+    const cur = SESSION.currentPlayer;
+    if (!cur) { el.classList.remove('show'); return; }
+    const mine = SESSION.hotSeat ? true : cur.id === SESSION.me;
+    const t = teamById(cur.teamId);
+    const left = typeof cur.left === 'number' ? cur.left : CFG.ATTEMPTS;
+    const queue = SESSION.players.filter((p) => !p.done && p.id !== cur.id);
+    const nextUp = queue.length ? queue[0].name : null;
+
+    el.className = 'turn-banner show ' + (mine ? 'mine' : 'watching');
+    el.innerHTML = (mine ? "YOUR TURN — " + escapeHtml(cur.name) : escapeHtml(cur.name) + "'S TURN") +
+      '<span class="tb-sub">' + t.name.toUpperCase() + ' · ' + left + ' kick' + (left === 1 ? '' : 's') + ' left' +
+      (mine ? '' : ' · you are watching') +
+      (nextUp ? ' · next: ' + escapeHtml(nextUp) : '') + '</span>';
+  };
+
+  U.renderRoomScoreboard = function () {
+    const panel = $('roomBoard');
+    if (!panel) return;
+    const show = this.g.mode === 'room' && SESSION.active;
+    panel.classList.toggle('show', !!show);
+    if (!show) return;
+
+    const cur = SESSION.currentPlayer;
+    const rows = SESSION.standings.map((p, i) => {
+      const t = teamById(p.teamId);
+      const isCur = cur && p.id === cur.id;
+      const status = p.status === 'finished' || p.done ? 'FINISHED'
+        : isCur ? 'PLAYING NOW'
+        : p.status === 'playing' ? 'PLAYING' : 'WAITING';
+      const left = (p.done || p.status === 'finished') ? 0
+        : (typeof p.left === 'number' ? p.left : CFG.ATTEMPTS);
+      return '<li class="rb-row' + (isCur ? ' now' : '') + '">' +
+        '<span class="rb-rank">' + (i + 1) + '</span>' +
+        '<span class="rb-chip" style="background:' + t.primary + '"></span>' +
+        '<span class="rb-name">' + escapeHtml(p.name) +
+          '<em>' + t.name.toUpperCase() + '</em></span>' +
+        '<span class="rb-nums">' +
+          '<b>' + (p.score || 0) + '</b>' +
+          '<em>' + (p.goals || 0) + 'G · ' + left + ' left</em>' +
+        '</span>' +
+        '<span class="rb-status ' + status.toLowerCase().replace(/ /g, '-') + '">' + status + '</span>' +
+        '</li>';
+    }).join('');
+
+    panel.innerHTML =
+      '<div class="rb-head">ROOM ' + SESSION.code + ' · LIVE</div>' +
+      '<ol class="rb-list">' + rows + '</ol>';
+
+    this.renderSpectatorLabels();
+    this.renderTurnBanner();
+  };
+
+  /* keep it in step with the room and with the HUD */
+  const origSyncHud = U.syncHud;
+  U.syncHud = function () {
+    origSyncHud.call(this);
+    this.renderRoomScoreboard();
+  };
+
+  const origRenderRoom = U.renderRoom;
+  U.renderRoom = function () {
+    origRenderRoom.call(this);
+    this.renderRoomScoreboard();
+    if (SESSION.active && SESSION.state && SESSION.state.status === 'done') {
+      this.renderRoomFinal();
+    }
+  };
+
+  /* ==========================================================================
+     4. FINAL ROOM RESULTS
+     ========================================================================== */
+
+  U.renderRoomFinal = function () {
+    const host = $('roomFinal');
+    if (!host) return;
+    const st = SESSION.state;
+    if (!st || st.status !== 'done') { host.innerHTML = ''; host.classList.remove('show'); return; }
+
+    const board = SESSION.standings;
+    const winner = SESSION.winner;
+
+    /* team totals: several players may share a kit */
+    const teams = {};
+    board.forEach((p) => {
+      const t = teamById(p.teamId);
+      const e = teams[p.teamId] || (teams[p.teamId] = { name: t.name, flag: t.flag, primary: t.primary, total: 0, goals: 0, players: 0 });
+      e.total += p.score || 0;
+      e.goals += p.goals || 0;
+      e.players += 1;
+    });
+    const teamRows = Object.values(teams).sort((a, b) => b.total - a.total);
+    const topTeam = teamRows[0];
+    const teamTie = teamRows.length > 1 && teamRows[1].total === topTeam.total;
+
+    host.classList.add('show');
+    host.innerHTML =
+      '<div class="rf-title">🏁 FINAL RESULTS</div>' +
+      (winner
+        ? '<div class="rf-winner">🏆 ' + escapeHtml(winner.name) + ' WINS — ' + winner.score + ' PTS · ' + winner.goals + '/3 GOALS</div>'
+        : '<div class="rf-winner tie">IT\'S A TIE AT THE TOP!</div>') +
+      '<div class="rf-cols">' +
+        '<div><h4>PLAYER RANKINGS</h4><ol class="rf-list">' +
+          board.map((p) => {
+            const t = teamById(p.teamId);
+            return '<li><span class="rb-chip" style="background:' + t.primary + '"></span>' +
+              escapeHtml(p.name) + ' <em>' + t.name.toUpperCase() + '</em>' +
+              '<b>' + (p.score || 0) + '</b><span class="rf-g">' + (p.goals || 0) + '/3</span></li>';
+          }).join('') +
+        '</ol></div>' +
+        '<div><h4>TEAM TOTALS</h4><ol class="rf-list">' +
+          teamRows.map((t) =>
+            '<li><span class="rb-chip" style="background:' + t.primary + '"></span>' +
+            t.flag + ' ' + t.name.toUpperCase() +
+            ' <em>' + t.players + 'p</em><b>' + t.total + '</b>' +
+            '<span class="rf-g">' + t.goals + 'G</span></li>').join('') +
+        '</ol></div>' +
+      '</div>' +
+      '<div class="rf-team">' +
+        (teamTie ? 'TEAM RESULT: DRAW' : 'WINNING TEAM: ' + topTeam.flag + ' ' + topTeam.name.toUpperCase() + ' (' + topTeam.total + ' PTS)') +
+      '</div>';
+  };
+
+  /* ==========================================================================
+     5. HIDE THE BOARD OUTSIDE ROOM PLAY
+     ========================================================================== */
+
+  const origSetMode = U.setMode;
+  U.setMode = function (mode) {
+    origSetMode.call(this, mode);
+    const panel = $('roomBoard');
+    if (panel && mode !== 'room') panel.classList.remove('show');
+    if (mode !== 'room') {
+      const lb = $('specLabels'); if (lb) lb.innerHTML = '';
+      const tb = $('turnBanner'); if (tb) tb.classList.remove('show');
+    }
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — sound layer fixes
+   sound.js
+   --------------------------------------------------------------------------
+   • adds the room-join sting
+   • a mute button that is visible on every screen, not just in-game
+   • a click sound on every button
+   • unlocks audio on the first interaction anywhere (autoplay rules)
+   • one-time reset of a stale "muted" preference
+   ========================================================================== */
+'use strict';
+
+/* the shimmering level-up sting for someone joining a room */
+SAMPLE_DEFS.join = { src: 'audio/join-room.mp3', vol: 0.6 };
+
+(function soundFixes() {
+
+  /* ---- a short UI click ------------------------------------------------ */
+
+  RetroAudio.prototype.uiClick = function () {
+    this.tone({ type: 'square', freq: 1180, to: 1500, dur: 0.035, gain: 0.09 });
+  };
+
+  /* ---- one-time reset of a stale mute preference -----------------------
+     Earlier automated testing persisted muted:true into localStorage, which
+     left the game silent on load. Clear it once, then respect the user's
+     choice from that point on. */
+  const SOUND_RESET_KEY = 'freekick_sound_reset_v2';
+  try {
+    if (!localStorage.getItem(SOUND_RESET_KEY)) {
+      const p = Prefs.read();
+      if (p.muted) { delete p.muted; Prefs.write(p); }
+      localStorage.setItem(SOUND_RESET_KEY, '1');
+    }
+  } catch (_) { /* private mode — nothing to clear */ }
+
+  /* ---- UI patches ----------------------------------------------------- */
+
+  const U = UI.prototype;
+
+  /** keep the in-game and always-on mute buttons in step */
+  const origSyncMute = U.syncMute;
+  U.syncMute = function (m) {
+    origSyncMute.call(this, m);
+    const g = $('btnMuteGlobal');
+    if (g) {
+      g.textContent = m ? '🔇' : '🔊';
+      g.classList.toggle('off', m);
+      g.setAttribute('aria-pressed', m ? 'true' : 'false');
+      g.setAttribute('aria-label', m ? 'Sound is off. Turn sound on' : 'Sound is on. Mute sound');
+      g.title = m ? 'Sound off — click to unmute (M)' : 'Sound on — click to mute (M)';
+    }
+  };
+
+  const origBind = U.bindButtons;
+  U.bindButtons = function () {
+    origBind.call(this);
+
+    const gm = $('btnMuteGlobal');
+    if (gm) {
+      gm.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AUDIO.onUserGesture();
+        this.g.toggleMute();
+      });
+    }
+
+    /* Every button makes a click, and every interaction unlocks audio.
+       Capture phase so it fires before the button's own handler. */
+    document.addEventListener('pointerdown', (e) => {
+      AUDIO.onUserGesture();
+      const b = e.target && e.target.closest && e.target.closest('button, .team-face, .mode-card');
+      if (b && !b.disabled) AUDIO.uiClick();
+    }, true);
+
+    /* keyboard users get the unlock too */
+    window.addEventListener('keydown', () => AUDIO.onUserGesture(), { capture: true });
+  };
+
+  /* ---- room join sting ------------------------------------------------- */
+
+  if (typeof RoomSession !== 'undefined') {
+    const origJoin = RoomSession.prototype.join;
+    RoomSession.prototype.join = function (code, name, teamId) {
+      return origJoin.call(this, code, name, teamId).then((st) => {
+        if (!AUDIO.playSample('join')) {
+          /* synth fallback: a rising shimmer */
+          [784, 988, 1319, 1568].forEach((f, i) =>
+            AUDIO.tone({ type: 'triangle', freq: f, dur: 0.16, gain: 0.16, delay: i * 0.07 }));
+        }
+        return st;
+      });
+    };
+
+    const origCreate = RoomSession.prototype.create;
+    RoomSession.prototype.create = function (name, teamId) {
+      return origCreate.call(this, name, teamId).then((st) => {
+        if (!AUDIO.playSample('join')) {
+          [784, 988, 1319, 1568].forEach((f, i) =>
+            AUDIO.tone({ type: 'triangle', freq: f, dur: 0.16, gain: 0.16, delay: i * 0.07 }));
+        }
+        return st;
+      });
+    };
+  }
+
+  /* ---- announce new arrivals to everyone already in the room ---------- */
+
+  if (typeof RoomSession !== 'undefined') {
+    const origPoll = RoomSession.prototype.poll;
+    RoomSession.prototype.poll = async function () {
+      const before = this.players.length;
+      const wasStatus = this.state && this.state.status;
+      await origPoll.call(this);
+      /* somebody new appeared in the room */
+      if (this.players.length > before) {
+        if (!AUDIO.playSample('join')) AUDIO.menuSelect();
+      }
+      /* the host just kicked the match off */
+      if (wasStatus === 'lobby' && this.state && this.state.status === 'playing') {
+        if (!AUDIO.playSample('whistle')) AUDIO.whistle();
+      }
+    };
+  }
+})();
 
 </script>
 </body>

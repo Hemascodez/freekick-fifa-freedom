@@ -141,6 +141,7 @@ body.playing #flicker { display: block; }
   padding: 0;
   background: #000;
   overflow: hidden;
+  justify-content: center;
 }
 
 /* animated menu backdrop: flag-coloured light sweeps */
@@ -509,7 +510,9 @@ kbd {
 #stage {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  max-height: 100%;
   background: #05050c;
 }
 
@@ -1515,4 +1518,277 @@ kbd {
   .room-state.yourturn { animation: none; }
   .mode-card { transition: none; }
   .mode-card:hover { transform: none; }
+}
+
+/* always-visible sound toggle, on top of every screen -------------------- */
+
+.mute-global {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 95;
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--cream);
+  background: linear-gradient(180deg, #33336b 0%, var(--panel-2) 45%, #14142e 100%);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 3px 8px rgba(0,0,0,.6);
+}
+.mute-global:hover { filter: brightness(1.2); }
+.mute-global.off { border-color: var(--red); color: #ff9aa2; }
+
+/* the in-game HUD already has its own control, so avoid two side by side */
+body.playing .mute-global { top: 6px; right: 6px; opacity: .92; }
+
+/* ==========================================================================
+   Live room scoreboard + final results
+   ========================================================================== */
+
+.room-board {
+  position: absolute;
+  top: 44px;
+  right: 6px;
+  z-index: 34;
+  width: min(31%, 240px);
+  max-height: calc(100% - 96px);
+  overflow: auto;
+  display: none;
+  padding: 5px;
+  background: rgba(8,10,24,.86);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.7);
+}
+.room-board.show { display: block; }
+
+.rb-head {
+  font-size: clamp(6.5px, .95vw, 9.5px);
+  font-weight: 900;
+  letter-spacing: .16em;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.rb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+
+.rb-row {
+  display: grid;
+  grid-template-columns: 12px 10px 1fr auto;
+  grid-template-areas: "rank chip name nums" ". . status status";
+  align-items: center;
+  gap: 2px 4px;
+  padding: 3px 4px;
+  background: #14142e;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: clamp(6.5px, 1vw, 10px);
+}
+.rb-row.now { border-color: var(--gold); background: #23234c; box-shadow: 0 0 8px rgba(255,210,63,.3); }
+
+.rb-rank { grid-area: rank; font-weight: 900; color: var(--gold); text-align: right; }
+.rb-chip { width: 8px; height: 8px; border: 1px solid #000; display: block; }
+.rb-row .rb-chip { grid-area: chip; }
+
+.rb-name { grid-area: name; overflow: hidden; color: var(--cream); font-weight: 900; }
+.rb-name em { display: block; font-style: normal; font-weight: 400; font-size: .82em; color: #9b9bc4; }
+
+.rb-nums { grid-area: nums; text-align: right; }
+.rb-nums b { color: var(--gold); font-size: 1.2em; }
+.rb-nums em { display: block; font-style: normal; font-size: .78em; color: #9b9bc4; }
+
+.rb-status {
+  grid-area: status;
+  font-size: .78em;
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: #9b9bc4;
+}
+.rb-status.playing-now { color: #6cff8a; }
+.rb-status.waiting { color: #ffcf7a; }
+.rb-status.finished { color: #9b9bc4; }
+
+/* on a small stage the board would swallow the pitch */
+@container app (max-width: 620px) {
+  .room-board { display: none !important; }
+}
+
+/* ---- final room results ---- */
+
+.room-final { display: none; margin: .6em 0; }
+.room-final.show { display: block; }
+
+.rf-title {
+  font-size: clamp(10px, 1.6vw, 15px);
+  font-weight: 900;
+  letter-spacing: .16em;
+  color: var(--gold);
+  margin-bottom: .4em;
+}
+
+.rf-winner {
+  padding: .55em .8em;
+  margin-bottom: .6em;
+  font-size: clamp(10px, 1.7vw, 17px);
+  font-weight: 900;
+  letter-spacing: .04em;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffe382 0%, var(--gold) 60%, #dda012 100%);
+  border: 2px solid #4d3a05;
+  border-radius: 8px;
+}
+.rf-winner.tie { color: var(--cream); background: #23234c; border-color: var(--line); }
+
+.rf-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.rf-cols h4 {
+  margin: 0 0 .35em;
+  font-size: clamp(7.5px, 1.1vw, 11px);
+  letter-spacing: .16em;
+  color: var(--gold);
+}
+
+.rf-list { list-style: none; margin: 0; padding: 0; counter-reset: rf; display: grid; gap: 3px; }
+.rf-list li {
+  counter-increment: rf;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: .35em .5em;
+  background: #14142e;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: clamp(7.5px, 1.15vw, 12px);
+  color: var(--cream);
+  font-weight: 900;
+}
+.rf-list li::before { content: counter(rf) "."; color: var(--gold); min-width: 1.2em; }
+.rf-list li em { font-style: normal; font-weight: 400; color: #9b9bc4; font-size: .85em; }
+.rf-list li b { margin-left: auto; color: var(--gold); }
+.rf-g { color: #9b9bc4; font-weight: 400; font-size: .85em; min-width: 2.6em; text-align: right; }
+
+.rf-team {
+  margin-top: .7em;
+  padding: .5em .7em;
+  text-align: center;
+  font-size: clamp(8.5px, 1.35vw, 13px);
+  font-weight: 900;
+  letter-spacing: .1em;
+  color: var(--gold);
+  background: #12122b;
+  border: 1px dashed var(--gold);
+  border-radius: 7px;
+}
+
+/* ==========================================================================
+   Container-relative sizing for in-match overlays
+   Using cqw/cqh (the #app size container) keeps the HUD, banner and meters in
+   proportion to the pitch in any window shape, including portrait.
+   ========================================================================== */
+
+@supports (font-size: 1cqw) {
+  .hud-panel   { font-size: clamp(6px, 1.15cqw, 12px); }
+  .hud-btn     { font-size: clamp(6px, 1.1cqw, 11px); }
+  #bannerText  { font-size: clamp(16px, 6.4cqw, 68px); }
+  #bannerSub   { font-size: clamp(7px, 1.7cqw, 17px); }
+  #bannerPts   { font-size: clamp(8px, 2.2cqw, 24px); }
+  #bannerCont  { font-size: clamp(7px, 1.35cqw, 13px); }
+  #tip         { font-size: clamp(6px, 1.2cqw, 12px); }
+  #aimBar      { font-size: clamp(6px, 1.05cqw, 10px); }
+  #powerWrap .plabel { font-size: clamp(6px, 1.02cqw, 10px); }
+  .rb-head     { font-size: clamp(6px, .95cqw, 9.5px); }
+  .rb-row      { font-size: clamp(6px, 1cqw, 10px); }
+}
+
+/* the banner sits over the pitch, so keep it clear of the meters */
+#banner { padding-bottom: 12%; }
+
+/* ==========================================================================
+   Crisp DOM nameplates over the pitch + the whose-turn banner
+   Canvas text at 6px is always mushy once upscaled, so player names are real
+   DOM text positioned in percentages of the canvas box.
+   ========================================================================== */
+
+.spec-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 33;
+  pointer-events: none;
+}
+
+.spec-label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  text-align: center;
+  background: rgba(8,10,24,.88);
+  border: 1px solid var(--line);
+  border-top-width: 3px;
+  border-radius: 5px;
+  padding: 2px 6px 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.6);
+}
+
+.spec-label .sl-name {
+  display: block;
+  font-size: clamp(6px, 1.05cqw, 11px);
+  font-weight: 900;
+  letter-spacing: .04em;
+  color: var(--cream);
+  line-height: 1.15;
+}
+.spec-label .sl-meta {
+  display: block;
+  font-size: clamp(5.5px, .92cqw, 9.5px);
+  font-weight: 900;
+  letter-spacing: .06em;
+  line-height: 1.2;
+}
+.spec-label.waiting  .sl-meta { color: #ffcf7a; }
+.spec-label.finished .sl-meta { color: #9b9bc4; }
+.spec-label.playing  { border-color: var(--gold); box-shadow: 0 0 10px rgba(255,210,63,.5); }
+.spec-label.playing  .sl-meta { color: #6cff8a; }
+
+/* whose turn it is ------------------------------------------------------- */
+
+.turn-banner {
+  position: absolute;
+  left: 50%;
+  top: 7%;
+  transform: translateX(-50%);
+  z-index: 36;
+  display: none;
+  padding: .4em 1.1em;
+  text-align: center;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: clamp(8px, 1.7cqw, 17px);
+  border-radius: 8px;
+  border: 2px solid var(--gold);
+  background: rgba(8,10,24,.9);
+  color: var(--gold);
+  box-shadow: 0 3px 12px rgba(0,0,0,.65);
+  white-space: nowrap;
+}
+.turn-banner.show { display: block; }
+.turn-banner .tb-sub {
+  display: block;
+  font-size: .72em;
+  letter-spacing: .1em;
+  color: var(--cream);
+  font-weight: 700;
+}
+.turn-banner.mine {
+  border-color: #6cff8a;
+  color: #6cff8a;
+  animation: blink 1.3s steps(2, end) infinite;
+}
+.turn-banner.watching { border-color: var(--line); color: #ffcf7a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-banner.mine { animation: none; }
 }
