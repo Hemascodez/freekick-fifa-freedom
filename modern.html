@@ -1438,6 +1438,18 @@ const groundY = (z) => CFG.HORIZON + CFG.LIFT * persp(z);
    4. AUDIO — everything synthesised with the Web Audio API
    ========================================================================== */
 
+/* Recorded samples (royalty-free), loaded from ./audio/ when present.
+   Every trigger falls back to the synthesized retro sound if a file is
+   missing or blocked, so the game still works as a single HTML file. */
+const SAMPLE_DEFS = {
+  cheer:      { src: 'audio/crowd-cheer.mp3',      vol: 0.75 },
+  aww:        { src: 'audio/crowd-aww.mp3',        vol: 0.65 },
+  whistle:    { src: 'audio/whistle.mp3',          vol: 0.45, maxDur: 1.6 },
+  commentary: { src: 'audio/goal-commentary.mp3',  vol: 0.8 },
+  music:      { src: 'audio/menu-music.mp3',       vol: 0.32, loop: true },
+  ambience:   { src: 'audio/stadium-ambience.mp3', vol: 0.22, loop: true },
+};
+
 class RetroAudio {
   constructor() {
     this.ctx = null;
@@ -1447,6 +1459,86 @@ class RetroAudio {
     this._charge = null;
     this._crowdBase = null;
     this._noiseBuf = null;
+    this.samples = {};
+    this.unlocked = false;      // becomes true after the first user gesture
+    this.scene = 'menu';        // 'menu' | 'match'
+  }
+
+  /* --- recorded-sample layer ------------------------------------------ */
+
+  loadSamples() {
+    Object.keys(SAMPLE_DEFS).forEach((name) => {
+      const def = SAMPLE_DEFS[name];
+      try {
+        const el = new Audio();
+        el.preload = 'auto';
+        el.loop = !!def.loop;
+        el.volume = def.vol;
+        el.muted = this.muted;
+        const entry = { el, def, ok: false, failed: false };
+        el.addEventListener('canplaythrough', () => { entry.ok = true; }, { once: true });
+        el.addEventListener('error', () => { entry.failed = true; }, { once: true });
+        el.src = def.src;
+        this.samples[name] = entry;
+      } catch (_) { /* no HTMLAudio — synth only */ }
+    });
+  }
+
+  /** try to play a sample; returns false so callers can fall back to synth */
+  playSample(name, restart) {
+    const s = this.samples[name];
+    if (!s || s.failed || this.muted || !this.unlocked) return false;
+    try {
+      if (restart !== false) s.el.currentTime = 0;
+      const p = s.el.play();
+      if (p && p.catch) p.catch(() => {});
+      if (s.def.maxDur) {
+        clearTimeout(s.stopTimer);
+        s.stopTimer = setTimeout(() => { s.el.pause(); }, s.def.maxDur * 1000);
+      }
+      return true;
+    } catch (_) { return false; }
+  }
+
+  stopSample(name) {
+    const s = this.samples[name];
+    if (!s) return;
+    try { s.el.pause(); s.el.currentTime = 0; } catch (_) {}
+  }
+
+  /** menu music vs stadium ambience, switched by the UI */
+  setScene(scene) {
+    this.scene = scene;
+    if (!this.unlocked || this.muted) return;
+    if (scene === 'match') {
+      this.stopSample('music');
+      this.playSample('ambience');
+    } else {
+      this.stopSample('ambience');
+      this.playSample('music');
+    }
+  }
+
+  /** called on the first pointer/key gesture — autoplay is legal now */
+  onUserGesture() {
+    this.resume();
+    if (this.unlocked) return;
+    this.unlocked = true;
+    /* prime every element inside the trusted gesture (Safari needs this:
+       one play() per element while the gesture is live unlocks it forever) */
+    Object.keys(this.samples).forEach((k) => {
+      const s = this.samples[k];
+      if (s.failed || s.def.loop) return;   // loops start via setScene below
+      try {
+        const wasMuted = s.el.muted;
+        s.el.muted = true;
+        const p = s.el.play();
+        const finish = () => { s.el.pause(); s.el.currentTime = 0; s.el.muted = wasMuted; };
+        if (p && p.then) p.then(finish).catch(() => { s.el.muted = wasMuted; });
+        else finish();
+      } catch (_) {}
+    });
+    this.setScene(this.scene);
   }
 
   init() {
@@ -1479,6 +1571,12 @@ class RetroAudio {
       this.master.gain.cancelScheduledValues(t);
       this.master.gain.setTargetAtTime(m ? 0 : 0.75, t, 0.02);
     }
+    Object.keys(this.samples).forEach((k) => {
+      const s = this.samples[k];
+      s.el.muted = m;
+      if (m && !s.def.loop) { try { s.el.pause(); } catch (_) {} }
+    });
+    if (!m) this.setScene(this.scene);   // resume the right background bed
   }
 
   _makeNoise(seconds) {
@@ -3217,7 +3315,7 @@ class Game {
     this.fx.clear();
     this.ui.syncHud();
     AUDIO.resume();
-    AUDIO.whistle();
+    if (!AUDIO.playSample('whistle')) AUDIO.whistle();
     AUDIO.crowdCheer(0.5);
     this.beginAttempt();
   }
@@ -3361,7 +3459,7 @@ class Game {
           outcome: 'post', bx, by, power, viaPost: false,
           title: 'OFF THE POST!', sub: 'INCHES FROM GLORY', tone: 'bad',
         });
-        AUDIO.crowdGroan();
+        if (!AUDIO.playSample('aww')) AUDIO.crowdGroan();
         return;
       }
       /* crossbar */
@@ -3378,7 +3476,7 @@ class Game {
         outcome: 'bar', bx, by, power, viaPost: false,
         title: 'CROSSBAR!', sub: power > 88 ? 'TOO MUCH POWER ON IT' : 'THE WOODWORK SAVES THE KEEPER', tone: 'bad',
       });
-      AUDIO.crowdGroan();
+      if (!AUDIO.playSample('aww')) AUDIO.crowdGroan();
       return;
     }
 
@@ -3389,7 +3487,7 @@ class Game {
         outcome: 'wide', bx, by, power, viaPost: false,
         title: 'WIDE!', sub: 'DRAGGED IT PAST THE POST', tone: 'bad',
       });
-      AUDIO.crowdGroan();
+      if (!AUDIO.playSample('aww')) AUDIO.crowdGroan();
       return;
     }
     if (by > GHT) {
@@ -3401,7 +3499,7 @@ class Game {
         sub: tooHot ? 'THAT ONE IS STILL CLIMBING' : 'LEANED BACK TOO FAR',
         tone: 'bad',
       });
-      AUDIO.crowdGroan();
+      if (!AUDIO.playSample('aww')) AUDIO.crowdGroan();
       return;
     }
 
@@ -3436,7 +3534,7 @@ class Game {
       b.vx = b.vy = b.vz = 0;
     }
     AUDIO.save();
-    AUDIO.crowdCheer(0.35);
+    if (!AUDIO.playSample('aww')) AUDIO.crowdCheer(0.35);
     this.renderer.kick(3);
     this.kicker.setPose('dejected');
 
@@ -3467,7 +3565,8 @@ class Game {
     else if (power >= CFG.IDEAL_LO && power <= CFG.IDEAL_HI) { title = 'SWEET STRIKE!'; sub = 'PERFECT CONNECTION'; }
 
     AUDIO.goal();
-    AUDIO.crowdCheer(1);
+    if (!AUDIO.playSample('cheer')) AUDIO.crowdCheer(1);
+    AUDIO.playSample('commentary');
     this.renderer.kick(5);
     this.renderer.flash('#ffffff', 0.16);
     const gp = proj(bx, by, 0);
@@ -3537,7 +3636,7 @@ class Game {
       const dx = Math.abs(b.x - this.wallX);
       if (dx < CFG.WALL_HALF + CFG.BALL_R && b.y < CFG.WALL_H) {
         AUDIO.noise({ freq: 420, q: 1.2, dur: 0.16, gain: 0.22, sweepTo: 130 });
-        AUDIO.crowdGroan();
+        if (!AUDIO.playSample('aww')) AUDIO.crowdGroan();
         this.renderer.kick(3);
         b.goFree();
         b.vx = (b.x - this.wallX) * 3 + rand(-2, 2);
@@ -3674,7 +3773,7 @@ class Game {
     if (this.board.goals >= 2) {
       this.fx.confetti(200);
       for (let i = 0; i < 6; i++) this.fx.firework(0.2 + i * 0.42);
-      AUDIO.crowdCheer(1);
+      if (!AUDIO.playSample('cheer')) AUDIO.crowdCheer(1);
     }
     this.ui.showResults(this.board, rating, rank, table, id);
     this.setState(S.FINAL_RESULTS);
@@ -3829,6 +3928,7 @@ class UI {
       if (el) el.classList.toggle('active', k === key);
     });
     document.body.classList.toggle('playing', key === 'game');
+    AUDIO.setScene(key === 'game' ? 'match' : 'menu');
   }
 
   say(msg) { if (this.el.live) this.el.live.textContent = msg; }
@@ -4203,8 +4303,9 @@ function boot() {
     throw err;
   }
 
-  /* first gesture unlocks the Web Audio context on every browser */
-  const unlock = () => { AUDIO.resume(); };
+  /* first gesture unlocks Web Audio + recorded samples on every browser */
+  AUDIO.loadSamples();
+  const unlock = () => { AUDIO.onUserGesture(); };
   window.addEventListener('pointerdown', unlock, { once: true });
   window.addEventListener('keydown', unlock, { once: true });
 

@@ -142,7 +142,8 @@ skin sits at `/modern.html`.
 - Arcade ball physics: scripted swerving arc, then free physics for rebounds and bounces
 - Goalkeeper AI with reaction delay, occasional late dives, catches, deflections and fumbles
 - Collision on the posts, crossbar, keeper and defensive wall (post rebounds can still go in)
-- Web Audio API sound design — whistle, charge-up, kick, woodwork ring, net swish, crowd, fireworks
+- Recorded stadium audio (royalty-free): menu music, looping crowd ambience, kickoff whistle, goal commentary, cheers and groans — with full synthesized fallback if `audio/` is missing, so the single HTML file still works alone
+- Web Audio API sound design — charge-up, kick, woodwork ring, net swish, fireworks
 - Procedurally drawn crowd, waving flags, floodlights, scrolling hoardings and celebration fireworks
 - Accessible: keyboard-navigable menus, visible focus rings, ARIA live commentary, `prefers-reduced-motion` support
 
@@ -151,7 +152,8 @@ skin sits at `/modern.html`.
 ## 🗂 Project layout
 
 ```
-index.html                 retro build (final), self-contained — the default page
+index.html                 retro build (final) — the default page
+audio/                     recorded sound effects (optional; synth fallback without it)
 modern.html                modern build, self-contained
 game.js                    all game logic — states, physics, keeper, scoring, audio, UI
 style.css                  retro skin

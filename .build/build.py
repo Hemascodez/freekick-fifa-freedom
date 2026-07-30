@@ -22,6 +22,11 @@ def emit(out_html, css_name, extra_js, split_dir):
     (d/'game.js').write_text(js)
     if extra_js:
         (d/extra_js).write_text((root/extra_js).read_text())
+    # recorded sounds ride along so the split builds stay complete
+    audio_src = root/'audio'
+    if audio_src.is_dir():
+        import shutil
+        shutil.copytree(audio_src, d/'audio', dirs_exist_ok=True)
 
 # index.html = RETRO (the final version, default page when hosted)
 emit('index.html', 'style.css', None, 'separate-files')
