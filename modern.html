@@ -5188,6 +5188,18 @@ class ShotClock {
    4. BACKEND — Supabase REST, with a localStorage fallback
    ========================================================================== */
 
+/* Baked-in shared backend for the hosted KICKOFF 2026 event.
+   The anon key is safe to ship publicly: it is gated by the row-level
+   security policies (read + insert only), which is exactly what an open
+   event leaderboard needs. Every visitor to the hosted link therefore shares
+   one leaderboard and one set of friendly-match rooms with no per-device
+   setup. To point at a different Supabase project, either overwrite these two
+   values or use the organiser panel (a saved config always wins). */
+const DEFAULT_BACKEND = {
+  url: 'https://vpqtdwubtvkpdfphcbxf.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwcXRkd3VidHZrcGRmcGhjYnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MjEyMzEsImV4cCI6MjEwMDk5NzIzMX0.SJlO7iXngy4IBk4sr7J_XA9nwUrke3QcIRJNtWt9xAc',
+};
+
 class EventBackend {
   constructor() {
     this.cfg = this.readConfig();
@@ -5196,8 +5208,13 @@ class EventBackend {
   }
 
   readConfig() {
-    try { return JSON.parse(localStorage.getItem(EVENT.BACKEND_KEY)) || {}; }
-    catch (_) { return {}; }
+    /* an explicitly saved config wins; otherwise fall back to the shared
+       default so a fresh browser is connected out of the box */
+    try {
+      const saved = JSON.parse(localStorage.getItem(EVENT.BACKEND_KEY));
+      if (saved && saved.url && saved.anonKey) return saved;
+    } catch (_) { /* ignore */ }
+    return Object.assign({}, DEFAULT_BACKEND);
   }
 
   saveConfig(url, anonKey) {
