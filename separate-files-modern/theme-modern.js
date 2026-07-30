@@ -245,10 +245,10 @@
     ctx.fillRect(0, 113, CFG.W, 1.4);
 
     const msgs = [
-      'FREEDOM CUP — INDIA × USA',
+      'KICKOFF 2026 — HFI FREEDOM CUP',
       'FOOTBALL UNITES US',
       'PLAY FREE, PLAY TOGETHER',
-      'FREEDOM CUP — INDIA × USA',
+      'KICKOFF 2026 — HFI FREEDOM CUP',
       team.name.toUpperCase() + ' • ' + team.chant,
     ];
     const strip = msgs.join('   ✦   ') + '   ✦   ';

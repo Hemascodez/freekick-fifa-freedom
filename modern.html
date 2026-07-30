@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="FREEKICK: FIFA &amp; FREEDOM — an unofficial retro arcade free-kick game. Three kicks, one keeper, one Freedom Cup.">
-<title>FREEKICK: FIFA &amp; FREEDOM — Retro Arcade Free Kicks</title>
+<meta name="description" content="KICKOFF 2026 — a retro free-kick challenge. Three kicks, a 20-second shot clock, and a live team tournament leaderboard.">
+<title>FREEKICK — KICKOFF 2026</title>
 <style>
 /* ==========================================================================
    FREEKICK: FIFA & FREEDOM  —  MODERN skin
@@ -1039,23 +1039,24 @@ kbd {
         FREEKICK<br><span class="t2">FIFA</span> <span class="t3">&amp;</span> <span class="t2">FREEDOM</span>
       </h1>
       <p class="tagline">Play Free, Play Together</p>
-      <p class="freedom-banner">FREEDOM CUP — INDIA × USA</p>
+      <p class="freedom-banner" id="eventBrand">KICKOFF 2026 — HFI INTERNAL TOURNAMENT</p>
     </div>
 
     <div class="row mt">
       <button class="btn big" id="btnPlay" type="button">▶ PLAY GAME</button>
-      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 HIGH SCORES</button>
+      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 LEADERBOARD</button>
+      <button class="btn alt" id="btnWelcomeAdmin" type="button">⚙ ORGANISER</button>
     </div>
 
-    <p class="small muted center mt" style="max-width:640px">
-      THREE FREE KICKS. ONE KEEPER. AIM FOR THE CORNERS.<br>
-      A retro arcade football game — everything drawn in code, no downloads, works offline.
+    <p class="small muted center mt" style="max-width:660px">
+      THREE FREE KICKS · 20 SECONDS PER SHOT · EIGHT TEAMS<br>
+      Enter your name, pick your team, and put your score on the board.
     </p>
 
     <p class="disclaimer">
       This is an unofficial retro football game and is not affiliated with FIFA or any national
-      football federation. All team names refer to national sides only; every kit, badge and
-      character in this game is an original simplified design created for this project.
+      football federation. Team names refer to national sides only; every kit and character is an
+      original simplified design created for this project.
     </p>
   </section>
 
@@ -1064,15 +1065,17 @@ kbd {
     <div class="panel">
       <h2 class="panel-title" id="regTitle">★ PLAYER REGISTRATION ★</h2>
 
+      <p class="match-notice" id="matchNotice">Loading match status…</p>
+
       <div class="reg-grid">
         <div>
           <label class="field-label" for="inpName">Player name (required)</label>
-          <input type="text" id="inpName" maxlength="14" autocomplete="off" spellcheck="false"
+          <input type="text" id="inpName" maxlength="24" autocomplete="off" spellcheck="false"
                  placeholder="TYPE YOUR NAME" aria-describedby="nameHint">
-          <p class="hint" id="nameHint" role="status">ENTER A PLAYER NAME TO UNLOCK START GAME.</p>
+          <p class="hint" id="nameHint" role="status">ENTER A PLAYER NAME TO CONTINUE.</p>
 
           <fieldset style="border:0;padding:0;margin:.4em 0 0">
-            <legend class="field-label" style="padding:0">Select your team</legend>
+            <legend class="field-label" style="padding:0">Select your team (8 teams)</legend>
             <div class="team-grid" id="teamGrid" role="radiogroup" aria-label="Select your team"></div>
           </fieldset>
         </div>
@@ -1081,32 +1084,47 @@ kbd {
           <span class="field-label" style="margin:0">Jersey preview</span>
           <canvas id="jerseyCanvas" width="96" height="96" role="img"
                   aria-label="Preview of your selected team's simplified retro jersey"></canvas>
-          <span class="preview-name" id="previewName">INDIA</span>
-          <span class="preview-sub" id="previewSub">BLUE TIGERS • KIT #10</span>
+          <span class="preview-name" id="previewName">GERMANY</span>
+          <span class="preview-sub" id="previewSub">KIT #10</span>
         </div>
       </div>
 
-      <div class="controls-guide" aria-label="Controls guide">
-        <div><kbd>←</kbd><kbd>→</kbd> Move the player along the line</div>
-        <div>🖱 Mouse / drag on the pitch: aim the target</div>
-        <div><kbd>↑</kbd><kbd>↓</kbd> Fine-tune aim height</div>
-        <div><kbd>SPACE</kbd> Hold = power, release = kick</div>
-        <div><kbd>ENTER</kbd> Continue after a kick</div>
-        <div><kbd>R</kbd> Restart match</div>
-        <div><kbd>M</kbd> Mute / unmute</div>
-        <div>Touchscreen: pad moves &amp; aims + KICK button</div>
-      </div>
-
       <div class="row mt">
-        <button class="btn big" id="btnStart" type="button" disabled>START GAME ▶</button>
+        <button class="btn big" id="btnStart" type="button" disabled>CONTINUE ▶</button>
         <button class="btn alt" id="btnBackWelcome" type="button">← BACK</button>
       </div>
-    </div>
 
-    <p class="disclaimer">
-      Unofficial fan project — not affiliated with FIFA or any national football federation.
-      Kits are original simplified designs using national colour families only.
-    </p>
+      <p class="privacy-note">
+        🔒 Your name is used only for this leaderboard entry. No employee list is stored anywhere in
+        this game — every player types their own name each time they play.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= INSTRUCTIONS ================= -->
+  <section id="screen-instructions" class="screen" aria-labelledby="insTitle">
+    <div class="panel">
+      <h2 class="panel-title" id="insTitle">★ HOW TO PLAY ★</h2>
+
+      <p class="ins-who" id="insWho"></p>
+      <p class="ins-match" id="insMatch"></p>
+
+      <ol class="ins-list">
+        <li><b>Move</b> — press <kbd>←</kbd> <kbd>→</kbd> to walk the ball along the free-kick line and open up an angle.</li>
+        <li><b>Aim</b> — move your <b>mouse or trackpad</b> over the pitch (or drag on a touchscreen). The target ring follows your pointer. <kbd>↑</kbd> <kbd>↓</kbd> fine-tune the height.</li>
+        <li><b>Kick</b> — <b>hold <kbd>SPACE</kbd></b> to build power, then <b>release</b> to shoot. The green band on the meter is the sweet spot.</li>
+        <li><b>You get 3 attempts</b>, and each one has a <b class="warn-text">20-second shot clock</b>. If the timer hits zero before you kick, that attempt is <b>counted as missed</b>.</li>
+        <li><b>Aim for the corners</b> — top corners score 175, bottom corners 125, a plain goal 100, and perfect power adds a 50-point bonus.</li>
+        <li>Your <b>total score is added to the global leaderboard</b> and counts toward your team's match total.</li>
+      </ol>
+
+      <p class="small muted center">Press <kbd>ENTER</kbd> after each kick to continue · <kbd>M</kbd> mutes sound · <kbd>R</kbd> restarts</p>
+
+      <div class="row mt">
+        <button class="btn big" id="btnBeginChallenge" type="button">START MY 3 FREE KICKS ▶</button>
+        <button class="btn alt" id="btnInsBack" type="button">← CHANGE NAME / TEAM</button>
+      </div>
+    </div>
   </section>
 
   <!-- ================= GAME ================= -->
@@ -1116,23 +1134,23 @@ kbd {
               aria-label="Retro football stadium: the free-kick taker, the ball, a defensive wall, the goalkeeper and the goal."></canvas>
 
       <div id="hud">
-        <div class="hud-panel">
-          <span class="k">PLAYER</span><span class="v" id="hudName">PLAYER</span>
-        </div>
-        <div class="hud-panel">
-          <span id="hudTeamChip" aria-hidden="true"></span><span class="v" id="hudTeam">INDIA</span>
-        </div>
-        <div class="hud-panel">
-          <span class="k">SCORE</span><span class="v big" id="hudScore">0000</span>
-        </div>
-        <div class="hud-panel">
-          <span class="k">GOALS</span><span class="v" id="hudGoals">0/3</span>
-        </div>
+        <div class="hud-panel"><span class="v" id="hudName">PLAYER</span></div>
+        <div class="hud-panel"><span id="hudTeamChip" aria-hidden="true"></span><span class="v" id="hudTeam">GERMANY</span></div>
+        <div class="hud-panel"><span class="k">SCORE</span><span class="v big" id="hudScore">0000</span></div>
+        <div class="hud-panel"><span class="k">GOALS</span><span class="v" id="hudGoals">0/3</span></div>
         <div class="hud-panel">
           <span class="k">KICK</span><span class="v" id="hudAttempt">1/3</span>
           <span id="kickPips" aria-hidden="true"></span>
         </div>
+        <div class="hud-panel clock-panel">
+          <span class="k">TIME</span><span class="v" id="hudClock">20s</span>
+        </div>
+        <div class="hud-panel"><span class="k">RANK</span><span class="v" id="hudRank">—</span></div>
+        <div class="hud-panel match-panel">
+          <span class="v" id="hudRound">PRACTICE</span><span class="v dim" id="hudOpponent">—</span>
+        </div>
         <span class="hud-spacer"></span>
+        <button class="hud-btn" id="btnHudBoard" type="button">🏆</button>
         <button class="hud-btn" id="btnTouchToggle" type="button" aria-pressed="false">TOUCH</button>
         <button class="hud-btn" id="btnMute" type="button" aria-pressed="false" aria-label="Sound is on. Mute sound">♪ ON</button>
         <button class="hud-btn" id="btnQuit" type="button">MENU</button>
@@ -1177,46 +1195,174 @@ kbd {
   <!-- ================= RESULTS ================= -->
   <section id="screen-results" class="screen" aria-labelledby="resTitle">
     <div class="panel">
-      <h2 class="panel-title" id="resTitle">★ FULL TIME — FREEDOM CUP ★</h2>
+      <h2 class="panel-title" id="resTitle">★ FULL TIME ★</h2>
       <div id="newHighTag"></div>
 
       <div class="result-grid">
         <div class="stat"><span class="k">Player</span><span class="v" id="rName">PLAYER</span></div>
-        <div class="stat"><span class="k">Team</span><span class="v" id="rTeam">INDIA</span></div>
+        <div class="stat"><span class="k">Team</span><span class="v" id="rTeam">GERMANY</span></div>
         <div class="stat"><span class="k">Final score</span><span class="v" id="rScore">0000</span></div>
         <div class="stat"><span class="k">Goals</span><span class="v" id="rGoals">0 / 3</span></div>
+        <div class="stat"><span class="k">Time taken</span><span class="v" id="rTime">0.0s</span></div>
+        <div class="stat"><span class="k">Timed out</span><span class="v" id="rTimeouts">0</span></div>
       </div>
 
       <div id="ratingLine">ROOKIE</div>
       <p id="resultMsg"></p>
+      <p class="submit-status" id="submitStatus"></p>
 
       <div class="row mt">
-        <button class="btn big" id="btnAgain" type="button">↻ PLAY AGAIN</button>
-        <button class="btn alt" id="btnChangePlayer" type="button">CHANGE PLAYER</button>
+        <button class="btn big" id="btnResultScores" type="button">🏆 VIEW LEADERBOARD</button>
+        <button class="btn alt" id="btnAgain" type="button">↻ PLAY AGAIN</button>
+        <button class="btn alt" id="btnChangePlayer" type="button">NEXT PLAYER</button>
         <button class="btn alt" id="btnChangeTeam" type="button">CHANGE TEAM</button>
-        <button class="btn alt" id="btnResultScores" type="button">🏆 HIGH SCORES</button>
       </div>
     </div>
-    <p class="disclaimer">Unofficial retro football game — not affiliated with FIFA or any national football federation.</p>
   </section>
 
-  <!-- ================= HIGH SCORES ================= -->
-  <section id="screen-highscores" class="screen" aria-labelledby="hsTitle">
-    <div class="panel">
-      <h2 class="panel-title" id="hsTitle">🏆 FREEDOM CUP HALL OF FAME</h2>
-      <p class="small muted" id="hsCaption">TOP 10 — SAVED ON THIS DEVICE</p>
-      <div class="scroll-box">
-        <table class="hs-table">
-          <thead>
-            <tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th>
-                <th scope="col">Score</th><th scope="col">Goals</th><th scope="col">Date</th></tr>
-          </thead>
-          <tbody id="hsBody"></tbody>
-        </table>
+  <!-- ================= LEADERBOARD ================= -->
+  <section id="screen-leaderboard" class="screen" aria-labelledby="lbTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="lbTitle">🏆 KICKOFF 2026 — LIVE LEADERBOARD</h2>
+
+      <div class="lb-tabs" role="tablist">
+        <button class="lb-tab active" data-tab="players" role="tab" aria-selected="true" type="button">PLAYERS</button>
+        <button class="lb-tab" data-tab="teams" role="tab" aria-selected="false" type="button">TEAMS</button>
+        <button class="lb-tab" data-tab="bracket" role="tab" aria-selected="false" type="button">TOURNAMENT</button>
       </div>
+
+      <p class="lb-status" id="lbStatus">Loading…</p>
+
+      <div class="lb-view active" data-view="players">
+        <div class="scroll-box">
+          <table class="hs-table">
+            <thead><tr>
+              <th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Team</th>
+              <th scope="col">Goals</th><th scope="col">Score</th><th scope="col">Time</th><th scope="col">Round</th>
+            </tr></thead>
+            <tbody id="lbPlayersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="lb-view" data-view="teams">
+        <div class="scroll-box">
+          <table class="hs-table">
+            <thead><tr>
+              <th scope="col">#</th><th scope="col">Team</th><th scope="col">Players</th>
+              <th scope="col">Goals</th><th scope="col">Total</th><th scope="col">Avg</th>
+              <th scope="col">Opponent</th><th scope="col">Round</th><th scope="col">Result</th><th scope="col">Next round</th>
+            </tr></thead>
+            <tbody id="lbTeamsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="lb-view" data-view="bracket">
+        <div class="bracket" id="lbBracket"></div>
+      </div>
+
       <div class="row mt">
-        <button class="btn" id="btnHsBack" type="button">← BACK</button>
-        <button class="btn danger" id="btnHsClear" type="button">CLEAR TABLE</button>
+        <button class="btn" id="btnLbBack" type="button">← BACK</button>
+        <button class="btn alt" id="btnLbRefresh" type="button">↻ REFRESH</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ORGANISER ================= -->
+  <section id="screen-admin" class="screen" aria-labelledby="admTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="admTitle">⚙ ORGANISER — MATCH CONTROL</h2>
+
+      <div class="adm-block">
+        <h3>Create match</h3>
+        <div class="adm-row">
+          <div class="adm-field">
+            <label class="field-label" for="admRound">Round</label>
+            <select id="admRound" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="admTeamA">Team 1 — shoots first</label>
+            <select id="admTeamA" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="admTeamB">Team 2 — shoots second</label>
+            <select id="admTeamB" class="adm-select"></select>
+          </div>
+          <button class="btn" id="btnAdmCreate" type="button">START MATCH</button>
+        </div>
+        <p class="small muted" id="admEligibleHint"></p>
+      </div>
+
+      <div class="adm-block">
+        <h3>Live match</h3>
+        <div id="admLive"></div>
+      </div>
+
+      <div class="adm-block">
+        <h3>All matches &amp; who advances</h3>
+        <div id="admMatches"></div>
+        <div class="row mt" style="justify-content:flex-start">
+          <button class="btn danger" id="btnAdmResetTourney" type="button">RESET BRACKET</button>
+        </div>
+      </div>
+
+      <div class="adm-block">
+        <h3>Shared leaderboard (Supabase)</h3>
+        <p class="adm-status" id="admBackendStatus"></p>
+        <div class="adm-row">
+          <div class="adm-field grow">
+            <label class="field-label" for="admUrl">Project URL</label>
+            <input type="text" id="admUrl" class="adm-input" placeholder="https://xxxx.supabase.co" spellcheck="false">
+          </div>
+          <div class="adm-field grow">
+            <label class="field-label" for="admKey">Anon public key</label>
+            <input type="text" id="admKey" class="adm-input" placeholder="eyJhbGciOi..." spellcheck="false">
+          </div>
+          <button class="btn" id="btnAdmSaveBackend" type="button">SAVE &amp; TEST</button>
+          <button class="btn alt" id="btnAdmDisconnect" type="button">DISCONNECT</button>
+        </div>
+        <details class="adm-details">
+          <summary>First-time setup — run this SQL in Supabase, then paste your URL + anon key above</summary>
+          <button class="btn alt tiny" id="btnAdmCopySql" type="button">COPY SQL</button>
+<pre id="admSql">create table if not exists scores (
+  id          bigserial primary key,
+  player_name text not null,
+  team_id     text not null,
+  team_name   text,
+  goals       int  default 0,
+  attempts    int  default 3,
+  score       int  default 0,
+  time_ms     int  default 0,
+  round_id    text,
+  match_id    text,
+  created_at  timestamptz default now()
+);
+
+create table if not exists tournament (
+  id         int primary key,
+  state      jsonb not null,
+  updated_at timestamptz default now()
+);
+
+alter table scores     enable row level security;
+alter table tournament enable row level security;
+
+create policy "read scores"    on scores     for select using (true);
+create policy "add scores"     on scores     for insert with check (true);
+create policy "read bracket"   on tournament for select using (true);
+create policy "add bracket"    on tournament for insert with check (true);
+create policy "edit bracket"   on tournament for update using (true);</pre>
+          <p class="small muted">
+            These policies let anyone read and add scores, which is what an open event leaderboard
+            needs. Anyone who views the page can read the anon key, so treat the leaderboard as
+            public and don't reuse this project for confidential data.
+          </p>
+        </details>
+      </div>
+
+      <div class="row mt">
+        <button class="btn" id="btnAdmBack" type="button">← BACK</button>
       </div>
     </div>
   </section>
@@ -2479,10 +2625,10 @@ class Renderer {
     this.px(0, 130, CFG.W, 2, '#07070f');
 
     const msgs = [
-      'FREEDOM CUP  —  INDIA × USA',
+      'KICKOFF 2026  —  HFI FREEDOM CUP',
       'FOOTBALL UNITES US',
       'PLAY FREE, PLAY TOGETHER',
-      'FREEDOM CUP  —  INDIA × USA',
+      'KICKOFF 2026  —  HFI FREEDOM CUP',
       team.name.toUpperCase() + '  •  ' + team.chant,
     ];
     const strip = msgs.join('   ★   ') + '   ★   ';
@@ -4570,10 +4716,10 @@ if (document.readyState === 'loading') {
     ctx.fillRect(0, 113, CFG.W, 1.4);
 
     const msgs = [
-      'FREEDOM CUP — INDIA × USA',
+      'KICKOFF 2026 — HFI FREEDOM CUP',
       'FOOTBALL UNITES US',
       'PLAY FREE, PLAY TOGETHER',
-      'FREEDOM CUP — INDIA × USA',
+      'KICKOFF 2026 — HFI FREEDOM CUP',
       team.name.toUpperCase() + ' • ' + team.chant,
     ];
     const strip = msgs.join('   ✦   ') + '   ✦   ';
@@ -4805,6 +4951,1262 @@ if (document.readyState === 'loading') {
       ctx.restore();
     };
   }
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   KICKOFF 2026 — event layer
+   event.js
+   --------------------------------------------------------------------------
+   Adds, on top of the base game:
+     • the eight KICKOFF 2026 teams
+     • a 20-second shot clock per attempt (timeout = missed attempt)
+     • an 8 -> 4 -> 2 -> champion tournament bracket
+     • a global leaderboard backed by Supabase, with a localStorage fallback
+
+   PRIVACY: no employee names are stored in this file and no fixed player
+   roster exists anywhere in the project. Players type their own name each
+   time they play, and only what the leaderboard needs is ever submitted.
+
+   Loads after game.js but before boot(), so all patches are live before the
+   Game object is constructed.
+   ========================================================================== */
+'use strict';
+
+/* ==========================================================================
+   1. THE EIGHT TEAMS
+   ========================================================================== */
+
+const EVENT_TEAM_IDS = ['GER', 'ESP', 'JPN', 'FRA', 'POR', 'BRA', 'NOR', 'ENG'];
+
+/* Norway is not in the base kit list — add it (red, with white and navy). */
+if (!TEAMS.some((t) => t.id === 'NOR')) {
+  const nor = {
+    id: 'NOR', name: 'Norway', flag: '🇳🇴', pattern: 'band',
+    primary: '#c8102e', secondary: '#ffffff', accent: '#00205b', trim: '#ffffff',
+    numberColor: '#ffffff',
+    gk: { primary: '#00c389', secondary: '#0a0a14', accent: '#ffffff' },
+    chant: 'THE LIONS',
+    shorts: '#00205b', socks: '#ffffff',
+  };
+  TEAMS.push(nor);
+}
+
+/** the ordered list of teams that take part in the tournament */
+function eventTeams() {
+  return EVENT_TEAM_IDS.map((id) => teamById(id));
+}
+
+const ROUNDS = [
+  { id: 'R1',    label: 'FIRST ROUND', slots: 8 },
+  { id: 'SEMI',  label: 'SEMIFINAL',   slots: 4 },
+  { id: 'FINAL', label: 'FINAL',       slots: 2 },
+];
+
+const roundLabel = (id) => (ROUNDS.find((r) => r.id === id) || { label: id }).label;
+
+/* ==========================================================================
+   2. CONFIG / CONSTANTS
+   ========================================================================== */
+
+const EVENT = {
+  SHOT_CLOCK: 20,             // seconds allowed per attempt
+  WARN_AT: 5,                 // countdown turns urgent here
+  BRAND: 'KICKOFF 2026',
+  BACKEND_KEY: 'kickoff2026_backend_v1',
+  TOURNEY_KEY: 'kickoff2026_tournament_v1',
+  LOCAL_SCORES_KEY: 'kickoff2026_scores_local_v1',
+  ADMIN_KEY: 'kickoff2026_admin_unlocked_v1',
+  /* An organiser gate, not real security — it only keeps players from
+     wandering into the admin screen during the event. Anything genuinely
+     protected would need server-side auth. */
+  ADMIN_PASSCODE: 'HFI2026',
+};
+
+/* ==========================================================================
+   3. SHOT CLOCK
+   ========================================================================== */
+
+class ShotClock {
+  constructor(seconds) {
+    this.limit = seconds;
+    this.reset();
+  }
+
+  reset() {
+    this.left = this.limit;
+    this.running = false;
+    this.expired = false;
+    this.used = 0;
+    this._lastBeep = null;
+  }
+
+  start() {
+    if (this.expired) return;
+    this.running = true;
+  }
+
+  stop() { this.running = false; }
+
+  /** returns true on the frame the clock runs out */
+  tick(dt) {
+    if (!this.running || this.expired) return false;
+    this.left -= dt;
+    this.used += dt;
+    if (this.left <= EVENT.WARN_AT) {
+      const whole = Math.ceil(this.left);
+      if (whole !== this._lastBeep && whole > 0) {
+        this._lastBeep = whole;
+        AUDIO.tone({ type: 'square', freq: 880, dur: 0.07, gain: 0.12 });
+      }
+    }
+    if (this.left <= 0) {
+      this.left = 0;
+      this.running = false;
+      this.expired = true;
+      return true;
+    }
+    return false;
+  }
+
+  get seconds() { return Math.max(0, Math.ceil(this.left)); }
+  get fraction() { return clamp(this.left / this.limit, 0, 1); }
+}
+
+/* ==========================================================================
+   4. BACKEND — Supabase REST, with a localStorage fallback
+   ========================================================================== */
+
+class EventBackend {
+  constructor() {
+    this.cfg = this.readConfig();
+    this.online = !!(this.cfg.url && this.cfg.anonKey);
+    this.lastError = null;
+  }
+
+  readConfig() {
+    try { return JSON.parse(localStorage.getItem(EVENT.BACKEND_KEY)) || {}; }
+    catch (_) { return {}; }
+  }
+
+  saveConfig(url, anonKey) {
+    const cfg = { url: String(url || '').replace(/\/+$/, ''), anonKey: String(anonKey || '').trim() };
+    try { localStorage.setItem(EVENT.BACKEND_KEY, JSON.stringify(cfg)); } catch (_) {}
+    this.cfg = cfg;
+    this.online = !!(cfg.url && cfg.anonKey);
+    return this.online;
+  }
+
+  clearConfig() {
+    try { localStorage.removeItem(EVENT.BACKEND_KEY); } catch (_) {}
+    this.cfg = {};
+    this.online = false;
+  }
+
+  _headers(extra) {
+    return Object.assign({
+      'apikey': this.cfg.anonKey,
+      'Authorization': 'Bearer ' + this.cfg.anonKey,
+      'Content-Type': 'application/json',
+    }, extra || {});
+  }
+
+  async _fetch(path, opts) {
+    const res = await fetch(this.cfg.url + '/rest/v1/' + path, opts);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + ' ' + body.slice(0, 180));
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  /* ---- local mirror so the event still runs if the network dies -------- */
+
+  _localScores() {
+    try { return JSON.parse(localStorage.getItem(EVENT.LOCAL_SCORES_KEY)) || []; }
+    catch (_) { return []; }
+  }
+
+  _saveLocalScores(list) {
+    try { localStorage.setItem(EVENT.LOCAL_SCORES_KEY, JSON.stringify(list.slice(-500))); } catch (_) {}
+  }
+
+  /* ---- scores --------------------------------------------------------- */
+
+  /** @returns {Promise<{ok:boolean, offline:boolean, error?:string}>} */
+  async submitScore(entry) {
+    const row = {
+      player_name: String(entry.name).slice(0, 40),
+      team_id: entry.teamId,
+      team_name: entry.teamName,
+      goals: entry.goals,
+      attempts: entry.attempts,
+      score: entry.score,
+      time_ms: Math.round(entry.timeMs),
+      round_id: entry.roundId || null,
+      match_id: entry.matchId || null,
+    };
+    /* always keep a local copy first — the event must never lose a score */
+    const local = this._localScores();
+    local.push(Object.assign({ id: 'local_' + Date.now() + '_' + randInt(100, 999), created_at: new Date().toISOString() }, row));
+    this._saveLocalScores(local);
+
+    if (!this.online) return { ok: true, offline: true };
+    try {
+      await this._fetch('scores', {
+        method: 'POST',
+        headers: this._headers({ 'Prefer': 'return=minimal' }),
+        body: JSON.stringify(row),
+      });
+      return { ok: true, offline: false };
+    } catch (err) {
+      this.lastError = err.message;
+      return { ok: false, offline: true, error: err.message };
+    }
+  }
+
+  /** all scores, newest-safe, sorted best first */
+  async fetchScores() {
+    if (this.online) {
+      try {
+        const rows = await this._fetch(
+          'scores?select=*&order=score.desc,time_ms.asc&limit=500',
+          { headers: this._headers() });
+        if (Array.isArray(rows)) return { rows, offline: false };
+      } catch (err) { this.lastError = err.message; }
+    }
+    const rows = this._localScores().slice().sort(
+      (a, b) => (b.score - a.score) || (a.time_ms - b.time_ms));
+    return { rows, offline: true };
+  }
+
+  /* ---- matches / bracket ---------------------------------------------- */
+
+  async fetchTournament() {
+    if (this.online) {
+      try {
+        const rows = await this._fetch(
+          'tournament?select=*&order=updated_at.desc&limit=1',
+          { headers: this._headers() });
+        if (Array.isArray(rows) && rows[0] && rows[0].state) {
+          return { state: rows[0].state, offline: false };
+        }
+      } catch (err) { this.lastError = err.message; }
+    }
+    try {
+      const raw = localStorage.getItem(EVENT.TOURNEY_KEY);
+      return { state: raw ? JSON.parse(raw) : null, offline: true };
+    } catch (_) { return { state: null, offline: true }; }
+  }
+
+  async saveTournament(state) {
+    try { localStorage.setItem(EVENT.TOURNEY_KEY, JSON.stringify(state)); } catch (_) {}
+    if (!this.online) return { ok: true, offline: true };
+    try {
+      /* single-row table keyed on id = 1, upserted */
+      await this._fetch('tournament?on_conflict=id', {
+        method: 'POST',
+        headers: this._headers({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify({ id: 1, state, updated_at: new Date().toISOString() }),
+      });
+      return { ok: true, offline: false };
+    } catch (err) {
+      this.lastError = err.message;
+      return { ok: false, offline: true, error: err.message };
+    }
+  }
+
+  async testConnection() {
+    if (!this.online) return { ok: false, error: 'No URL / key saved yet.' };
+    try {
+      await this._fetch('scores?select=id&limit=1', { headers: this._headers() });
+      return { ok: true };
+    } catch (err) { return { ok: false, error: err.message }; }
+  }
+}
+
+const BACKEND = new EventBackend();
+
+/* ==========================================================================
+   5. TOURNAMENT
+   ========================================================================== */
+
+class Tournament {
+  constructor() { this.state = Tournament.blank(); }
+
+  static blank() {
+    return {
+      brand: EVENT.BRAND,
+      teams: EVENT_TEAM_IDS.slice(),
+      matches: [],        // {id, round, teamA, teamB, status, currentTeam, winner, closedAt}
+      advanced: { R1: [], SEMI: [], FINAL: [] },
+      champion: null,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  load(state) {
+    this.state = Object.assign(Tournament.blank(), state || {});
+    if (!this.state.advanced) this.state.advanced = { R1: [], SEMI: [], FINAL: [] };
+    if (!Array.isArray(this.state.matches)) this.state.matches = [];
+    return this.state;
+  }
+
+  get matches() { return this.state.matches; }
+
+  /** the match currently accepting scores, if any */
+  get liveMatch() { return this.state.matches.find((m) => m.status === 'live') || null; }
+
+  matchById(id) { return this.state.matches.find((m) => m.id === id) || null; }
+
+  createMatch(teamA, teamB, round) {
+    if (teamA === teamB) throw new Error('A team cannot play itself.');
+    if (this.liveMatch) throw new Error('Close the current match before starting another.');
+    const m = {
+      id: 'm' + Date.now(),
+      round,
+      teamA, teamB,
+      status: 'live',
+      currentTeam: teamA,       // team A shoots first, then team B
+      winner: null,
+      createdAt: new Date().toISOString(),
+      closedAt: null,
+    };
+    this.state.matches.push(m);
+    this.touch();
+    return m;
+  }
+
+  /** hand over from the first team to the opposing team */
+  switchTeam(matchId) {
+    const m = this.matchById(matchId);
+    if (!m || m.status !== 'live') return null;
+    m.currentTeam = m.currentTeam === m.teamA ? m.teamB : m.teamA;
+    this.touch();
+    return m;
+  }
+
+  closeMatch(matchId, totals) {
+    const m = this.matchById(matchId);
+    if (!m) return null;
+    m.status = 'closed';
+    m.closedAt = new Date().toISOString();
+    m.scoreA = totals.a;
+    m.scoreB = totals.b;
+    m.winner = totals.a === totals.b ? null : (totals.a > totals.b ? m.teamA : m.teamB);
+    this.touch();
+    return m;
+  }
+
+  /** organiser confirms who goes through (handles draws explicitly) */
+  advance(matchId, teamId) {
+    const m = this.matchById(matchId);
+    if (!m) return null;
+    m.winner = teamId;
+    const bucket = this.state.advanced[m.round] || (this.state.advanced[m.round] = []);
+    if (bucket.indexOf(teamId) < 0) bucket.push(teamId);
+    if (m.round === 'FINAL') this.state.champion = teamId;
+    this.touch();
+    return m;
+  }
+
+  reopenMatch(matchId) {
+    const m = this.matchById(matchId);
+    if (!m || this.liveMatch) return null;
+    m.status = 'live';
+    m.closedAt = null;
+    this.touch();
+    return m;
+  }
+
+  deleteMatch(matchId) {
+    const i = this.state.matches.findIndex((m) => m.id === matchId);
+    if (i < 0) return false;
+    const m = this.state.matches[i];
+    Object.keys(this.state.advanced).forEach((r) => {
+      this.state.advanced[r] = this.state.advanced[r].filter((t) => t !== m.winner || r !== m.round);
+    });
+    if (this.state.champion === m.winner && m.round === 'FINAL') this.state.champion = null;
+    this.state.matches.splice(i, 1);
+    this.touch();
+    return true;
+  }
+
+  /** which teams are eligible to be picked for a given round */
+  eligible(round) {
+    if (round === 'R1') return this.state.teams.slice();
+    if (round === 'SEMI') return (this.state.advanced.R1 || []).slice();
+    return (this.state.advanced.SEMI || []).slice();
+  }
+
+  touch() {
+    this.state.updatedAt = new Date().toISOString();
+    BACKEND.saveTournament(this.state);
+  }
+
+  reset() {
+    this.state = Tournament.blank();
+    this.touch();
+  }
+
+  /** aggregate player scores into per-team standings */
+  standings(scoreRows) {
+    const byTeam = {};
+    this.state.teams.forEach((id) => {
+      const t = teamById(id);
+      byTeam[id] = {
+        teamId: id, name: t.name, primary: t.primary, flag: t.flag,
+        players: 0, total: 0, goals: 0, avg: 0,
+        opponent: null, round: null, result: null, qualified: false,
+      };
+    });
+    (scoreRows || []).forEach((r) => {
+      const s = byTeam[r.team_id];
+      if (!s) return;
+      s.players += 1;
+      s.total += (r.score || 0);
+      s.goals += (r.goals || 0);
+    });
+    Object.values(byTeam).forEach((s) => {
+      s.avg = s.players ? Math.round(s.total / s.players) : 0;
+    });
+
+    /* attach match context: newest match a team appears in wins */
+    this.state.matches.slice().reverse().forEach((m) => {
+      [[m.teamA, m.teamB], [m.teamB, m.teamA]].forEach(([self, other]) => {
+        const s = byTeam[self];
+        if (!s || s.round) return;
+        s.opponent = other;
+        s.round = m.round;
+        if (m.status === 'closed') {
+          s.result = m.winner === self ? 'WON' : (m.winner ? 'LOST' : 'DRAW');
+        } else {
+          s.result = m.currentTeam === self ? 'PLAYING NOW' : 'UP NEXT';
+        }
+      });
+    });
+    Object.keys(this.state.advanced).forEach((r) => {
+      (this.state.advanced[r] || []).forEach((id) => {
+        if (byTeam[id]) byTeam[id].qualified = true;
+      });
+    });
+    return Object.values(byTeam).sort((a, b) => b.total - a.total);
+  }
+
+  /** totals for one match, from the raw score rows */
+  matchTotals(match, scoreRows) {
+    let a = 0, b = 0, pa = 0, pb = 0;
+    (scoreRows || []).forEach((r) => {
+      if (r.match_id !== match.id) return;
+      if (r.team_id === match.teamA) { a += r.score || 0; pa++; }
+      else if (r.team_id === match.teamB) { b += r.score || 0; pb++; }
+    });
+    return { a, b, playersA: pa, playersB: pb };
+  }
+}
+
+const TOURNEY = new Tournament();
+
+/* ==========================================================================
+   6. GAME PATCHES — shot clock, timeout, event submission
+   ========================================================================== */
+
+(function patchGame() {
+  const G = Game.prototype;
+
+  /* ---- constructor tail: create the clock and load event state -------- */
+  const origInit = G.setMuted;   // any early method works as an init hook
+  let inited = false;
+  G.setMuted = function (m, silent) {
+    if (!inited) {
+      inited = true;
+      this.clock = new ShotClock(EVENT.SHOT_CLOCK);
+      this.eventTimeMs = 0;
+      this.submitState = 'idle';
+    }
+    return origInit.call(this, m, silent);
+  };
+
+  /* ---- fresh attempt resets the clock -------------------------------- */
+  const origBegin = G.beginAttempt;
+  G.beginAttempt = function () {
+    origBegin.call(this);
+    if (this.clock) this.clock.reset();
+  };
+
+  /* ---- a new match resets the accumulated time ------------------------ */
+  const origStart = G.startMatch;
+  G.startMatch = function (name, teamId) {
+    this.eventTimeMs = 0;
+    this.submitState = 'idle';
+    this.matchId = TOURNEY.liveMatch ? TOURNEY.liveMatch.id : null;
+    this.roundId = TOURNEY.liveMatch ? TOURNEY.liveMatch.round : null;
+    if (this.clock) this.clock.reset();
+    return origStart.call(this, name, teamId);
+  };
+
+  const origRestart = G.restartMatch;
+  G.restartMatch = function () {
+    this.eventTimeMs = 0;
+    this.submitState = 'idle';
+    if (this.clock) this.clock.reset();
+    return origRestart.call(this);
+  };
+
+  /* ---- the clock runs during AIMING and CHARGING only ---------------- */
+  const origUpdateAim = G.updateAim;
+  G.updateAim = function (dt) {
+    origUpdateAim.call(this, dt);
+    if (!this.clock) return;
+    this.clock.start();
+    if (this.clock.tick(dt)) this.onShotClockExpired();
+    this.ui.syncClock(this.clock);
+  };
+
+  /* ---- kicking stops the clock and banks the time ------------------- */
+  const origKick = G.kick;
+  G.kick = function (power) {
+    if (this.clock) {
+      this.clock.stop();
+      this.eventTimeMs += this.clock.used * 1000;
+      this.ui.syncClock(this.clock);
+    }
+    return origKick.call(this, power);
+  };
+
+  /** the attempt is forfeited when the shot clock hits zero */
+  G.onShotClockExpired = function () {
+    if (this.state !== S.AIMING && this.state !== S.CHARGING) return;
+    AUDIO.chargeStop();
+    this.eventTimeMs += this.clock.used * 1000;
+    this.input.kickHeld = false;
+    this.ball.mode = 'stopped';
+    this.kicker.setPose('dejected');
+    if (!AUDIO.playSample('aww')) AUDIO.crowdGroan();
+    AUDIO.tone({ type: 'square', freq: 220, to: 110, dur: 0.4, gain: 0.22 });
+    this.renderer.flash('#ff5d73', 0.14);
+    this.finishShot({
+      outcome: 'timeout', bx: 0, by: 0, power: 0, viaPost: false,
+      title: "TIME'S UP!",
+      sub: 'NO KICK TAKEN — ATTEMPT FORFEITED',
+      tone: 'bad',
+    });
+  };
+
+  /* ---- end of match: submit to the global leaderboard ---------------- */
+  const origEnd = G.endMatch;
+  G.endMatch = function () {
+    origEnd.call(this);
+    this.submitEventScore();
+  };
+
+  G.submitEventScore = function () {
+    const live = TOURNEY.liveMatch;
+    const entry = {
+      name: this.player.name,
+      teamId: this.player.teamId,
+      teamName: this.team.name,
+      goals: this.board.goals,
+      attempts: CFG.ATTEMPTS,
+      score: this.board.score,
+      timeMs: this.eventTimeMs,
+      roundId: this.roundId || (live ? live.round : null),
+      matchId: this.matchId || (live ? live.id : null),
+    };
+    this.submitState = 'sending';
+    this.ui.syncSubmit('sending');
+    BACKEND.submitScore(entry).then((res) => {
+      this.submitState = res.ok ? (res.offline ? 'offline' : 'sent') : 'failed';
+      this.ui.syncSubmit(this.submitState, res.error);
+      this.ui.refreshLeaderboard();
+    });
+  };
+})();
+
+/* ==========================================================================
+   7. HUD / RENDER PATCHES — draw the countdown on the pitch
+   ========================================================================== */
+
+(function patchRenderer() {
+  const origDraw = Game.prototype.draw;
+  Game.prototype.draw = function (dt) {
+    origDraw.call(this, dt);
+    const c = this.clock;
+    if (!c) return;
+    const showing = this.state === S.AIMING || this.state === S.CHARGING;
+    if (!showing && !c.expired) return;
+
+    const R = this.renderer;
+    const ctx = R.ctx;
+    const urgent = c.left <= EVENT.WARN_AT;
+
+    /* countdown bar just under the HUD */
+    const w = 150, x = (CFG.W - w) / 2, y = 30;
+    ctx.fillStyle = 'rgba(6,10,22,.72)';
+    ctx.fillRect(x - 2, y - 2, w + 4, 9);
+    ctx.fillStyle = urgent ? '#ff5d73' : '#ffd23f';
+    ctx.fillRect(x, y, w * c.fraction, 5);
+    ctx.strokeStyle = 'rgba(255,255,255,.5)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 8);
+
+    if (showing) {
+      const pulse = urgent && Math.floor(this.time * 6) % 2 === 0;
+      R.text(c.seconds + 's', CFG.W / 2, 22,
+        { size: urgent ? 13 : 11, color: pulse ? '#ffffff' : (urgent ? '#ff5d73' : '#ffd23f') });
+    }
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   KICKOFF 2026 — event UI
+   event-ui.js
+   --------------------------------------------------------------------------
+   Screens and controls layered on top of the base UI:
+     • team grid limited to the eight tournament teams
+     • an instructions screen between registration and kick-off
+     • global leaderboard with PLAYERS / TEAMS / BRACKET views
+     • organiser panel: Create Match, hand over, close, confirm who advances
+     • Supabase connection settings
+   ========================================================================== */
+'use strict';
+
+(function patchUI() {
+  const U = UI.prototype;
+
+  /* ==========================================================================
+     1. TEAM GRID — only the eight KICKOFF 2026 teams
+     ========================================================================== */
+
+  U.buildTeamGrid = function () {
+    const frag = document.createDocumentFragment();
+    eventTeams().forEach((t, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'team-card';
+      const id = 'team_' + t.id;
+      wrap.innerHTML =
+        '<input type="radio" name="team" id="' + id + '" value="' + t.id + '"' +
+        (i === 0 ? ' checked' : '') + ' aria-label="' + t.name + '">' +
+        '<label class="team-face" for="' + id + '">' +
+        '<span class="flag" aria-hidden="true">' + t.flag + '</span>' +
+        '<span class="tname">' + t.name.toUpperCase() + '</span>' +
+        '<span class="swatch" aria-hidden="true">' +
+        '<i style="background:' + t.primary + '"></i>' +
+        '<i style="background:' + t.secondary + '"></i>' +
+        '<i style="background:' + t.accent + '"></i>' +
+        '</span></label>';
+      frag.appendChild(wrap);
+    });
+    this.el.teamGrid.appendChild(frag);
+
+    $$('input[name="team"]', this.el.teamGrid).forEach((r) => {
+      r.addEventListener('change', () => {
+        this.selectedTeam = r.value;
+        this.g.state = S.TEAM_SELECT;
+        AUDIO.onUserGesture();
+        AUDIO.menuMove();
+        this.refreshPreview();
+        this.syncMatchNotice();
+        Prefs.merge({ team: r.value });
+      });
+      r.addEventListener('focus', () => { this.g.state = S.TEAM_SELECT; });
+    });
+    this.selectedTeam = EVENT_TEAM_IDS[0];
+    this.refreshPreview();
+  };
+
+  /** tells the player which team the organiser has shooting right now */
+  U.syncMatchNotice = function () {
+    const el = $('matchNotice');
+    if (!el) return;
+    const m = TOURNEY.liveMatch;
+    if (!m) {
+      el.className = 'match-notice';
+      el.innerHTML = '<b>PRACTICE MODE</b> — no match is live. Your score still goes to the global leaderboard.';
+      return;
+    }
+    const cur = teamById(m.currentTeam);
+    const next = teamById(m.currentTeam === m.teamA ? m.teamB : m.teamA);
+    const mine = this.selectedTeam === m.currentTeam;
+    el.className = 'match-notice' + (mine ? ' ok' : ' warn');
+    el.innerHTML =
+      '<b>' + roundLabel(m.round) + '</b> &nbsp;·&nbsp; NOW SHOOTING: <b>' + cur.name.toUpperCase() +
+      '</b> &nbsp;·&nbsp; UP NEXT: ' + next.name.toUpperCase() +
+      (mine ? '' : '<br><b>Heads up:</b> you picked ' + teamById(this.selectedTeam).name.toUpperCase() +
+        ', so your score counts on the leaderboard but not toward this match.');
+  };
+
+  /* ==========================================================================
+     2. REGISTRATION -> INSTRUCTIONS -> GAME
+     ========================================================================== */
+
+  const origTryStart = U.tryStart;
+  U.tryStart = function () {
+    if (!this.validateName()) {
+      AUDIO.onUserGesture();
+      AUDIO.error();
+      this.el.name.focus();
+      this.say('A player name is required before the match can start.');
+      return;
+    }
+    /* hold the details and show the instructions first */
+    this.pending = {
+      name: this.el.name.value.trim().slice(0, 24).toUpperCase(),
+      teamId: this.selectedTeam,
+    };
+    Prefs.merge({ name: this.pending.name, team: this.pending.teamId });
+    AUDIO.onUserGesture();
+    AUDIO.menuSelect();
+    this.showInstructions();
+  };
+
+  U.showInstructions = function () {
+    const p = this.pending;
+    const t = teamById(p.teamId);
+    const who = $('insWho');
+    if (who) {
+      who.innerHTML = '<b>' + escapeHtml(p.name) + '</b> &nbsp;playing for&nbsp; ' +
+        '<span class="ins-team"><span class="chip" style="background:' + t.primary + '"></span>' +
+        t.flag + ' ' + t.name.toUpperCase() + '</span>';
+    }
+    const m = TOURNEY.liveMatch;
+    const ctx = $('insMatch');
+    if (ctx) {
+      ctx.textContent = m
+        ? roundLabel(m.round) + ' — ' + teamById(m.teamA).name.toUpperCase() + ' vs ' + teamById(m.teamB).name.toUpperCase()
+        : 'Practice mode — no live match';
+    }
+    this.showScreen('instructions');
+    this.g.setState(S.REGISTER);
+    const b = $('btnBeginChallenge');
+    if (b) setTimeout(() => b.focus(), 60);
+  };
+
+  U.beginChallenge = function () {
+    const p = this.pending;
+    if (!p) { this.showScreen('register'); return; }
+    AUDIO.onUserGesture();
+    AUDIO.menuSelect();
+    this.showScreen('game');
+    this.hideBanner();
+    this.g.startMatch(p.name, p.teamId);
+    this.refreshPreview();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  };
+
+  /* ==========================================================================
+     3. HUD ADDITIONS — shot clock, round, opponent, projected rank
+     ========================================================================== */
+
+  U.syncClock = function (clock) {
+    const el = $('hudClock');
+    if (!el) return;
+    const s = clock.seconds;
+    el.textContent = s + 's';
+    el.classList.toggle('urgent', clock.left <= EVENT.WARN_AT && clock.left > 0);
+    el.classList.toggle('dead', clock.expired);
+  };
+
+  const origSyncHud = U.syncHud;
+  U.syncHud = function () {
+    origSyncHud.call(this);
+    const m = TOURNEY.liveMatch;
+    const rd = $('hudRound');
+    if (rd) rd.textContent = m ? roundLabel(m.round) : 'PRACTICE';
+    const opp = $('hudOpponent');
+    if (opp) {
+      if (m) {
+        const mine = this.g.player.teamId;
+        const other = mine === m.teamA ? m.teamB : (mine === m.teamB ? m.teamA : null);
+        opp.textContent = other ? 'vs ' + teamById(other).name.toUpperCase()
+          : teamById(m.teamA).name.toUpperCase() + ' v ' + teamById(m.teamB).name.toUpperCase();
+      } else opp.textContent = '—';
+    }
+    const rank = $('hudRank');
+    if (rank) {
+      const projected = this.projectedRank(this.g.board.score);
+      rank.textContent = projected ? '#' + projected : '—';
+    }
+  };
+
+  /** where this score would sit on the cached leaderboard */
+  U.projectedRank = function (score) {
+    const rows = this.cachedScores;
+    if (!rows || !rows.length) return null;
+    let better = 0;
+    rows.forEach((r) => { if ((r.score || 0) > score) better++; });
+    return better + 1;
+  };
+
+  /* ==========================================================================
+     4. RESULTS — submission status
+     ========================================================================== */
+
+  U.syncSubmit = function (state, err) {
+    const el = $('submitStatus');
+    if (!el) return;
+    el.className = 'submit-status ' + state;
+    if (state === 'sending') el.textContent = 'Submitting your score to the global leaderboard…';
+    else if (state === 'sent') el.textContent = '✔ Score submitted to the global leaderboard.';
+    else if (state === 'offline') {
+      el.textContent = BACKEND.online
+        ? '⚠ Saved on this device — the leaderboard server did not respond.'
+        : '⚠ Saved on this device. No leaderboard server is connected yet.';
+    } else if (state === 'failed') {
+      el.textContent = '⚠ Could not reach the leaderboard' + (err ? ' (' + err + ')' : '') + '. Score saved locally.';
+    } else el.textContent = '';
+  };
+
+  const origShowResults = U.showResults;
+  U.showResults = function (board, rating, rank, table, id) {
+    origShowResults.call(this, board, rating, rank, table, id);
+    const tm = $('rTime');
+    if (tm) tm.textContent = (this.g.eventTimeMs / 1000).toFixed(1) + 's';
+    const missed = board.history.filter((h) => h.outcome === 'timeout').length;
+    const to = $('rTimeouts');
+    if (to) to.textContent = String(missed);
+  };
+
+  /* ==========================================================================
+     5. LEADERBOARD — players / teams / bracket
+     ========================================================================== */
+
+  U.openLeaderboard = function (returnTo) {
+    this.lbReturn = returnTo || 'welcome';
+    this.showScreen('leaderboard');
+    this.g.setState(S.HIGH_SCORES);
+    this.refreshLeaderboard();
+  };
+
+  U.setLbTab = function (tab) {
+    this.lbTab = tab;
+    $$('.lb-tab').forEach((b) => {
+      const on = b.dataset.tab === tab;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $$('.lb-view').forEach((v) => v.classList.toggle('active', v.dataset.view === tab));
+  };
+
+  U.refreshLeaderboard = function () {
+    const status = $('lbStatus');
+    if (status) status.textContent = 'Loading…';
+    return BACKEND.fetchScores().then(({ rows, offline }) => {
+      this.cachedScores = rows;
+      if (status) {
+        status.textContent = offline
+          ? (BACKEND.online ? 'Offline — showing scores saved on this device.'
+                            : 'Local mode — connect Supabase in the organiser panel for a shared leaderboard.')
+          : 'Live — ' + rows.length + ' result' + (rows.length === 1 ? '' : 's') + ' from the global leaderboard.';
+        status.className = 'lb-status ' + (offline ? 'offline' : 'live');
+      }
+      this.renderPlayerBoard(rows);
+      this.renderTeamBoard(rows);
+      this.renderBracket(rows);
+      return rows;
+    });
+  };
+
+  U.renderPlayerBoard = function (rows) {
+    const body = $('lbPlayersBody');
+    if (!body) return;
+    if (!rows.length) {
+      body.innerHTML = '<tr><td class="hs-empty" colspan="7">NO SCORES YET — BE THE FIRST TO PLAY!</td></tr>';
+      return;
+    }
+    const me = this.g.player.name;
+    body.innerHTML = rows.slice(0, 100).map((r, i) => {
+      const t = teamById(r.team_id);
+      const mine = me && r.player_name === me ? ' class="me"' : '';
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+      return '<tr' + mine + '>' +
+        '<td class="num">' + medal + '</td>' +
+        '<td>' + escapeHtml(r.player_name) + '</td>' +
+        '<td><span class="chip" style="background:' + t.primary + '"></span>' +
+             escapeHtml(r.team_name || t.name).toUpperCase() + '</td>' +
+        '<td class="num">' + (r.goals || 0) + '/' + (r.attempts || 3) + '</td>' +
+        '<td class="num">' + (r.score || 0) + '</td>' +
+        '<td class="num">' + ((r.time_ms || 0) / 1000).toFixed(1) + 's</td>' +
+        '<td>' + (r.round_id ? roundLabel(r.round_id) : '—') + '</td>' +
+        '</tr>';
+    }).join('');
+  };
+
+  U.renderTeamBoard = function (rows) {
+    const body = $('lbTeamsBody');
+    if (!body) return;
+    const st = TOURNEY.standings(rows);
+    body.innerHTML = st.map((s, i) => {
+      const opp = s.opponent ? teamById(s.opponent).name.toUpperCase() : '—';
+      const resClass = s.result === 'WON' ? 'won' : s.result === 'LOST' ? 'lost'
+        : s.result === 'PLAYING NOW' ? 'live' : '';
+      return '<tr>' +
+        '<td class="num">' + (i + 1) + '</td>' +
+        '<td><span class="chip" style="background:' + s.primary + '"></span>' + s.flag + ' ' + s.name.toUpperCase() + '</td>' +
+        '<td class="num">' + s.players + '</td>' +
+        '<td class="num">' + s.goals + '</td>' +
+        '<td class="num">' + s.total + '</td>' +
+        '<td class="num">' + s.avg + '</td>' +
+        '<td>' + opp + '</td>' +
+        '<td>' + (s.round ? roundLabel(s.round) : '—') + '</td>' +
+        '<td class="' + resClass + '">' + (s.result || '—') + '</td>' +
+        '<td>' + (s.qualified ? '<b class="yes">✔ THROUGH</b>' : '—') + '</td>' +
+        '</tr>';
+    }).join('');
+  };
+
+  U.renderBracket = function (rows) {
+    const host = $('lbBracket');
+    if (!host) return;
+    const champ = TOURNEY.state.champion;
+    let html = '';
+    if (champ) {
+      const c = teamById(champ);
+      html += '<div class="champ-banner">🏆 CHAMPION: ' + c.flag + ' ' + c.name.toUpperCase() + '</div>';
+    }
+    html += ROUNDS.map((rd) => {
+      const ms = TOURNEY.matches.filter((m) => m.round === rd.id);
+      const cards = ms.length ? ms.map((m) => {
+        const A = teamById(m.teamA), B = teamById(m.teamB);
+        const tot = TOURNEY.matchTotals(m, rows);
+        const live = m.status === 'live';
+        const winA = m.winner === m.teamA, winB = m.winner === m.teamB;
+        return '<div class="bracket-match' + (live ? ' live' : '') + '">' +
+          '<div class="bm-round">' + (live ? 'LIVE — ' + teamById(m.currentTeam).name.toUpperCase() + ' SHOOTING' : 'FINAL SCORE') + '</div>' +
+          '<div class="bm-row' + (winA ? ' win' : '') + '">' +
+            '<span class="chip" style="background:' + A.primary + '"></span>' +
+            '<span class="bm-name">' + A.name.toUpperCase() + '</span>' +
+            '<span class="bm-score">' + tot.a + '</span></div>' +
+          '<div class="bm-row' + (winB ? ' win' : '') + '">' +
+            '<span class="chip" style="background:' + B.primary + '"></span>' +
+            '<span class="bm-name">' + B.name.toUpperCase() + '</span>' +
+            '<span class="bm-score">' + tot.b + '</span></div>' +
+        '</div>';
+      }).join('') : '<div class="bracket-empty">No matches created yet</div>';
+      return '<div class="bracket-round"><h4>' + rd.label + '</h4>' + cards + '</div>';
+    }).join('');
+    host.innerHTML = html;
+  };
+
+  /* ==========================================================================
+     6. ORGANISER PANEL
+     ========================================================================== */
+
+  U.openAdmin = function () {
+    if (!this.adminUnlocked) {
+      const pass = window.prompt('Organiser passcode:');
+      if (pass === null) return;
+      if (String(pass).trim().toUpperCase() !== EVENT.ADMIN_PASSCODE) {
+        AUDIO.error();
+        window.alert('Incorrect passcode.');
+        return;
+      }
+      this.adminUnlocked = true;
+    }
+    AUDIO.menuSelect();
+    this.showScreen('admin');
+    this.g.setState(S.HIGH_SCORES);
+    this.refreshAdmin();
+  };
+
+  U.refreshAdmin = function () {
+    /* round selector drives which teams are eligible */
+    const roundSel = $('admRound');
+    if (roundSel && !roundSel.options.length) {
+      roundSel.innerHTML = ROUNDS.map((r) => '<option value="' + r.id + '">' + r.label + '</option>').join('');
+    }
+    this.fillTeamSelects();
+
+    /* backend fields */
+    const u = $('admUrl'), k = $('admKey');
+    if (u && !u.value) u.value = BACKEND.cfg.url || '';
+    if (k && !k.value) k.value = BACKEND.cfg.anonKey || '';
+    const bs = $('admBackendStatus');
+    if (bs) {
+      bs.textContent = BACKEND.online
+        ? 'Connected to ' + BACKEND.cfg.url
+        : 'Not connected — scores are saved on this device only.';
+      bs.className = 'adm-status ' + (BACKEND.online ? 'live' : 'offline');
+    }
+
+    BACKEND.fetchScores().then(({ rows }) => {
+      this.cachedScores = rows;
+      this.renderLiveMatchPanel(rows);
+      this.renderAdminMatches(rows);
+    });
+  };
+
+  U.fillTeamSelects = function () {
+    const roundSel = $('admRound');
+    const round = roundSel ? roundSel.value : 'R1';
+    const eligible = TOURNEY.eligible(round);
+    const opts = (sel) => {
+      if (!sel) return;
+      const keep = sel.value;
+      sel.innerHTML = '<option value="">— select team —</option>' +
+        eligible.map((id) => {
+          const t = teamById(id);
+          return '<option value="' + id + '">' + t.flag + ' ' + t.name + '</option>';
+        }).join('');
+      if (eligible.indexOf(keep) >= 0) sel.value = keep;
+    };
+    opts($('admTeamA'));
+    opts($('admTeamB'));
+    const hint = $('admEligibleHint');
+    if (hint) {
+      hint.textContent = round === 'R1'
+        ? 'All eight teams are eligible in the first round.'
+        : eligible.length
+          ? eligible.length + ' team(s) have advanced and can be picked: ' +
+            eligible.map((id) => teamById(id).name).join(', ')
+          : 'No teams have advanced to this round yet — close the previous round\'s matches and confirm the winners first.';
+    }
+  };
+
+  U.renderLiveMatchPanel = function (rows) {
+    const host = $('admLive');
+    if (!host) return;
+    const m = TOURNEY.liveMatch;
+    if (!m) {
+      host.innerHTML = '<p class="small muted">No match is live. Create one above — until then players are in practice mode.</p>';
+      return;
+    }
+    const A = teamById(m.teamA), B = teamById(m.teamB);
+    const tot = TOURNEY.matchTotals(m, rows);
+    const cur = teamById(m.currentTeam);
+    const nxt = teamById(m.currentTeam === m.teamA ? m.teamB : m.teamA);
+    host.innerHTML =
+      '<div class="adm-live-head">' + roundLabel(m.round) + ' — LIVE</div>' +
+      '<div class="adm-live-grid">' +
+        '<div class="adm-live-team' + (m.currentTeam === m.teamA ? ' now' : '') + '">' +
+          '<span class="chip" style="background:' + A.primary + '"></span>' + A.name.toUpperCase() +
+          '<b>' + tot.a + '</b><span class="pl">' + tot.playersA + ' player(s)</span></div>' +
+        '<div class="adm-live-team' + (m.currentTeam === m.teamB ? ' now' : '') + '">' +
+          '<span class="chip" style="background:' + B.primary + '"></span>' + B.name.toUpperCase() +
+          '<b>' + tot.b + '</b><span class="pl">' + tot.playersB + ' player(s)</span></div>' +
+      '</div>' +
+      '<p class="small">Now shooting: <b>' + cur.name.toUpperCase() + '</b> · Up next: <b>' + nxt.name.toUpperCase() + '</b></p>' +
+      '<div class="row" style="justify-content:flex-start">' +
+        '<button class="btn alt" id="admSwitch" type="button">HAND OVER TO ' + nxt.name.toUpperCase() + '</button>' +
+        '<button class="btn danger" id="admClose" type="button">CLOSE MATCH</button>' +
+      '</div>';
+
+    const sw = $('admSwitch');
+    if (sw) sw.onclick = () => {
+      TOURNEY.switchTeam(m.id);
+      AUDIO.menuSelect();
+      this.refreshAdmin();
+      this.syncMatchNotice();
+      this.syncHud();
+    };
+    const cl = $('admClose');
+    if (cl) cl.onclick = () => this.closeLiveMatch(m, tot);
+  };
+
+  U.closeLiveMatch = function (m, tot) {
+    const A = teamById(m.teamA), B = teamById(m.teamB);
+    const msg = 'Close this match?\n\n' +
+      A.name + ': ' + tot.a + ' (' + tot.playersA + ' players)\n' +
+      B.name + ': ' + tot.b + ' (' + tot.playersB + ' players)\n\n' +
+      'No more scores will count toward it.';
+    if (!window.confirm(msg)) return;
+    TOURNEY.closeMatch(m.id, tot);
+    AUDIO.menuSelect();
+    this.refreshAdmin();
+    this.syncMatchNotice();
+  };
+
+  U.renderAdminMatches = function (rows) {
+    const host = $('admMatches');
+    if (!host) return;
+    if (!TOURNEY.matches.length) {
+      host.innerHTML = '<p class="small muted">No matches yet.</p>';
+      return;
+    }
+    host.innerHTML = TOURNEY.matches.slice().reverse().map((m) => {
+      const A = teamById(m.teamA), B = teamById(m.teamB);
+      const tot = TOURNEY.matchTotals(m, rows);
+      const decided = !!m.winner;
+      const tie = m.status === 'closed' && !m.winner;
+      let actions = '';
+      if (m.status === 'closed') {
+        actions =
+          '<button class="btn alt tiny" data-adv="' + m.id + '" data-team="' + m.teamA + '">' +
+            (m.winner === m.teamA ? '✔ ' : '') + A.name.toUpperCase() + ' ADVANCES</button>' +
+          '<button class="btn alt tiny" data-adv="' + m.id + '" data-team="' + m.teamB + '">' +
+            (m.winner === m.teamB ? '✔ ' : '') + B.name.toUpperCase() + ' ADVANCES</button>' +
+          '<button class="btn alt tiny" data-reopen="' + m.id + '">REOPEN</button>';
+      }
+      actions += '<button class="btn danger tiny" data-del="' + m.id + '">DELETE</button>';
+      return '<div class="adm-match' + (m.status === 'live' ? ' live' : '') + '">' +
+        '<div class="am-top"><b>' + roundLabel(m.round) + '</b> · ' +
+          (m.status === 'live' ? '<span class="live-dot">LIVE</span>' : 'CLOSED') +
+          (tie ? ' · <span class="tie">DRAW — pick who advances</span>' : '') +
+          (decided ? ' · advances: <b>' + teamById(m.winner).name.toUpperCase() + '</b>' : '') +
+        '</div>' +
+        '<div class="am-score">' + A.name.toUpperCase() + ' <b>' + tot.a + '</b> — <b>' + tot.b + '</b> ' + B.name.toUpperCase() + '</div>' +
+        '<div class="am-actions">' + actions + '</div>' +
+      '</div>';
+    }).join('');
+
+    $$('[data-adv]', host).forEach((b) => {
+      b.onclick = () => {
+        TOURNEY.advance(b.dataset.adv, b.dataset.team);
+        AUDIO.menuSelect();
+        this.refreshAdmin();
+      };
+    });
+    $$('[data-reopen]', host).forEach((b) => {
+      b.onclick = () => {
+        if (TOURNEY.liveMatch) { window.alert('Close the live match first.'); return; }
+        TOURNEY.reopenMatch(b.dataset.reopen);
+        this.refreshAdmin();
+        this.syncMatchNotice();
+      };
+    });
+    $$('[data-del]', host).forEach((b) => {
+      b.onclick = () => {
+        if (!window.confirm('Delete this match? Player scores stay on the leaderboard.')) return;
+        TOURNEY.deleteMatch(b.dataset.del);
+        this.refreshAdmin();
+        this.syncMatchNotice();
+      };
+    });
+  };
+
+  /* ==========================================================================
+     7. WIRING
+     ========================================================================== */
+
+  const origBind = U.bindButtons;
+  U.bindButtons = function () {
+    origBind.call(this);
+    const g = this.g;
+    const click = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
+
+    /* instructions screen */
+    click('btnBeginChallenge', () => this.beginChallenge());
+    click('btnInsBack', () => {
+      AUDIO.menuSelect();
+      this.showScreen('register');
+      g.setState(S.REGISTER);
+    });
+
+    /* leaderboard */
+    click('btnWelcomeScores', () => { AUDIO.onUserGesture(); this.openLeaderboard('welcome'); });
+    click('btnResultScores', () => this.openLeaderboard('results'));
+    click('btnLbBack', () => {
+      AUDIO.menuSelect();
+      const back = this.lbReturn === 'results' ? 'results' : 'welcome';
+      this.showScreen(back);
+      g.setState(back === 'results' ? S.FINAL_RESULTS : S.WELCOME);
+    });
+    click('btnLbRefresh', () => { AUDIO.menuMove(); this.refreshLeaderboard(); });
+    $$('.lb-tab').forEach((b) => {
+      b.addEventListener('click', () => { AUDIO.menuMove(); this.setLbTab(b.dataset.tab); });
+    });
+
+    /* in-game leaderboard peek */
+    click('btnHudBoard', () => this.openLeaderboard('welcome'));
+
+    /* organiser */
+    click('btnWelcomeAdmin', () => { AUDIO.onUserGesture(); this.openAdmin(); });
+    click('btnAdmBack', () => {
+      AUDIO.menuSelect();
+      this.showScreen('welcome');
+      g.setState(S.WELCOME);
+    });
+    const roundSel = $('admRound');
+    if (roundSel) roundSel.addEventListener('change', () => this.fillTeamSelects());
+
+    click('btnAdmCreate', () => {
+      const a = $('admTeamA').value, b = $('admTeamB').value, r = $('admRound').value;
+      if (!a || !b) { window.alert('Pick both teams first.'); return; }
+      try {
+        TOURNEY.createMatch(a, b, r);
+        AUDIO.menuSelect();
+        this.refreshAdmin();
+        this.syncMatchNotice();
+      } catch (err) { window.alert(err.message); }
+    });
+
+    click('btnAdmSaveBackend', () => {
+      const url = $('admUrl').value, key = $('admKey').value;
+      BACKEND.saveConfig(url, key);
+      const bs = $('admBackendStatus');
+      if (bs) { bs.textContent = 'Testing connection…'; bs.className = 'adm-status'; }
+      BACKEND.testConnection().then((res) => {
+        if (bs) {
+          bs.textContent = res.ok
+            ? '✔ Connected — the leaderboard is now shared across devices.'
+            : '✖ Could not connect: ' + res.error;
+          bs.className = 'adm-status ' + (res.ok ? 'live' : 'offline');
+        }
+        this.refreshLeaderboard();
+      });
+    });
+
+    click('btnAdmDisconnect', () => {
+      if (!window.confirm('Disconnect the leaderboard server? Scores will be saved on this device only.')) return;
+      BACKEND.clearConfig();
+      $('admUrl').value = '';
+      $('admKey').value = '';
+      this.refreshAdmin();
+    });
+
+    click('btnAdmResetTourney', () => {
+      if (!window.confirm('Reset the whole bracket? All matches and results are cleared. Player scores stay on the leaderboard.')) return;
+      TOURNEY.reset();
+      this.refreshAdmin();
+      this.syncMatchNotice();
+    });
+
+    click('btnAdmCopySql', () => {
+      const sql = $('admSql');
+      if (!sql) return;
+      const text = sql.textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          const b = $('btnAdmCopySql');
+          if (b) { b.textContent = '✔ COPIED'; setTimeout(() => { b.textContent = 'COPY SQL'; }, 1600); }
+        }).catch(() => {});
+      }
+    });
+  };
+
+  /* ==========================================================================
+     8. BOOT-TIME EVENT SETUP
+     ========================================================================== */
+
+  const origHydrate = U.hydrate;
+  U.hydrate = function (prefs) {
+    /* register the screens this layer adds so showScreen() manages them */
+    this.screens.instructions = $('screen-instructions');
+    this.screens.leaderboard = $('screen-leaderboard');
+    this.screens.admin = $('screen-admin');
+
+    origHydrate.call(this, prefs);
+    this.lbTab = 'players';
+    this.cachedScores = [];
+    this.adminUnlocked = false;
+    this.setLbTab('players');
+
+    /* pull the shared bracket, then paint everything that depends on it */
+    BACKEND.fetchTournament().then(({ state }) => {
+      TOURNEY.load(state);
+      this.syncMatchNotice();
+      this.syncHud();
+      this.refreshLeaderboard();
+    });
+
+    /* brand the welcome screen for the event */
+    const brand = $('eventBrand');
+    if (brand) brand.textContent = EVENT.BRAND + ' — HFI INTERNAL TOURNAMENT';
+  };
 })();
 
 </script>

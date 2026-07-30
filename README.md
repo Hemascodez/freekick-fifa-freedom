@@ -1,4 +1,4 @@
-# ⚽ FREEKICK: FIFA & FREEDOM
+# ⚽ FREEKICK — KICKOFF 2026
 
 A retro-arcade **free-kick game** that runs entirely in the browser. Three kicks, one
 goalkeeper, one Freedom Cup. No build step, no libraries, no external assets — every
@@ -34,6 +34,94 @@ python3 .build/build.py
 
 ---
 
+## 🏆 KICKOFF 2026 — event mode
+
+Built for the HFI internal tournament, and it works unchanged for a public release.
+
+### The eight teams
+
+Germany · Spain · Japan · France · Portugal · Brazil · Norway · England
+
+Taken from the `KICKOFF 2026 (Team Selection)` sheet — **team names only**. No employee
+names live anywhere in this project.
+
+### Player flow
+
+1. Enter your name (required) → 2. pick one of the eight teams → 3. read the instructions →
+4. take 3 free kicks, each with a **20-second shot clock** → 5. see your result →
+6. score is submitted to the global leaderboard → 7. view rankings, team totals and the bracket.
+
+If the shot clock reaches zero before you kick, the attempt is **recorded as missed** with
+0 points — same as a save or a wide shot.
+
+### Tournament structure
+
+**First round (8 teams) → Semifinal (4) → Final (2) → Champion.**
+
+Teams don't play simultaneously. The organiser starts a match, one team's players take their
+kicks, the organiser hands over, then the second team plays. The **higher combined player
+score wins** and the organiser confirms who advances.
+
+### Organiser panel
+
+Reachable from **⚙ ORGANISER** on the title screen. Passcode: `HFI2026` — change it in
+`event.js` (`EVENT.ADMIN_PASSCODE`).
+
+| Control | What it does |
+|---|---|
+| **Create match** | Pick round + both teams. Team 1 shoots first. |
+| **Hand over** | Switches the live match to the opposing team. |
+| **Close match** | Freezes the totals; no further scores count toward it. |
+| **X advances** | Confirms who goes through (also settles a draw). |
+| **Reopen / Delete** | Fix mistakes. Player scores are never deleted. |
+| **Reset bracket** | Clears all matches; leaderboard scores survive. |
+
+Semifinal and Final team pickers only offer teams that have actually advanced.
+
+### Leaderboard
+
+Three views, live throughout the event:
+
+- **PLAYERS** — rank, name, team, goals, score, time taken, round
+- **TEAMS** — players completed, goals, combined + average score, opponent, round, result, qualified
+- **TOURNAMENT** — the bracket with live match scores and the champion
+
+---
+
+## 🔌 Connecting the shared leaderboard (Supabase)
+
+Without this, the game still works — scores just stay on each device. For one shared
+leaderboard across everyone's laptops and phones:
+
+**1.** Create a free project at <https://supabase.com>.
+
+**2.** In the Supabase **SQL Editor**, run the schema from the organiser panel
+(**⚙ ORGANISER → Shared leaderboard → First-time setup → COPY SQL**). It creates a
+`scores` table and a single-row `tournament` table, and enables the read/insert policies
+an open leaderboard needs.
+
+**3.** In Supabase go to **Project Settings → API** and copy the **Project URL** and the
+**anon public** key.
+
+**4.** Paste both into the organiser panel and press **SAVE & TEST**. A green
+confirmation means every device now shares one leaderboard.
+
+Do this on each device that will host a play station (the settings are stored per browser),
+or bake them into `event.js` if you'd rather not repeat it.
+
+> **Security note, honestly stated:** the anon key is visible to anyone who opens the page,
+> and the policies above allow anyone to add scores and edit the bracket. That's the right
+> trade-off for an open internal event, but don't reuse that Supabase project for anything
+> confidential. The organiser passcode is a convenience gate, not real security.
+
+### Hosting the game itself
+
+Everything is static, so **GitHub Pages / Netlify / Cloudflare Pages all work** — the
+Supabase database is what makes the leaderboard shared, so no server of your own is needed.
+Follow the GitHub Pages steps below.
+
+---
+
 ## 🎮 Controls
 
 | Input | Action |
@@ -57,7 +145,7 @@ On desktop you can toggle them with the **TOUCH** button in the HUD.
 ## 🥅 How it plays
 
 1. Enter a player name (required) and pick one of **12 national teams**.
-2. You get **exactly three free kicks** from 22 m, with a three-man defensive wall that re-sets itself as you move.
+2. You get **exactly three free kicks** from 22 m, each on a **20-second shot clock**, with a three-man defensive wall that re-sets itself as you move.
 3. Walk the line with `←` `→`, aim with the mouse, then hold `SPACE` to charge.
 4. The keeper reads the shot, dives, and sometimes reacts late.
 
@@ -70,7 +158,7 @@ On desktop you can toggle them with the **TOUCH** button in the HUD.
 | Top-corner goal | 175 |
 | Goal after hitting the post | 200 |
 | Perfect power (60–80% zone) | **+50 bonus** |
-| Save, miss, woodwork, wall block | 0 |
+| Save, miss, woodwork, wall block, timed out | 0 |
 
 Power matters in both directions: **low power** gives the keeper more time to adjust, while
 **maximum power** loses accuracy and invites the crossbar. The 60–80% band is the sweet spot.
@@ -155,7 +243,9 @@ skin sits at `/modern.html`.
 index.html                 retro build (final) — the default page
 audio/                     recorded sound effects (optional; synth fallback without it)
 modern.html                modern build, self-contained
-game.js                    all game logic — states, physics, keeper, scoring, audio, UI
+game.js                    core game — states, physics, keeper, scoring, audio, UI
+event.js                   KICKOFF 2026: 8 teams, shot clock, bracket, Supabase client
+event-ui.js                event screens — instructions, leaderboard, organiser panel
 style.css                  retro skin
 style-modern.css           modern skin
 theme-modern.js            renderer overrides for the modern look (visuals only)
