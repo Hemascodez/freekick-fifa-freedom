@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="FREEKICK: FIFA &amp; FREEDOM — an unofficial retro arcade free-kick game. Three kicks, one keeper, one Freedom Cup.">
+<title>FREEKICK: FIFA &amp; FREEDOM — Retro Arcade Free Kicks</title>
+<!--STYLE-->
+</head>
+<body>
+
+<main id="app">
+
+  <!-- ================= WELCOME ================= -->
+  <section id="screen-welcome" class="screen active" aria-labelledby="welcomeTitle">
+    <div class="title-wrap">
+      <h1 class="game-title" id="welcomeTitle">
+        FREEKICK<br><span class="t2">FIFA</span> <span class="t3">&amp;</span> <span class="t2">FREEDOM</span>
+      </h1>
+      <p class="tagline">Play Free, Play Together</p>
+      <p class="freedom-banner">FREEDOM CUP — INDIA × USA</p>
+    </div>
+
+    <div class="row mt">
+      <button class="btn big" id="btnPlay" type="button">▶ PLAY GAME</button>
+      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 HIGH SCORES</button>
+    </div>
+
+    <p class="small muted center mt" style="max-width:640px">
+      THREE FREE KICKS. ONE KEEPER. AIM FOR THE CORNERS.<br>
+      A retro arcade football game — everything drawn in code, no downloads, works offline.
+    </p>
+
+    <p class="disclaimer">
+      This is an unofficial retro football game and is not affiliated with FIFA or any national
+      football federation. All team names refer to national sides only; every kit, badge and
+      character in this game is an original simplified design created for this project.
+    </p>
+  </section>
+
+  <!-- ================= REGISTRATION / TEAM SELECT ================= -->
+  <section id="screen-register" class="screen" aria-labelledby="regTitle">
+    <div class="panel">
+      <h2 class="panel-title" id="regTitle">★ PLAYER REGISTRATION ★</h2>
+
+      <div class="reg-grid">
+        <div>
+          <label class="field-label" for="inpName">Player name (required)</label>
+          <input type="text" id="inpName" maxlength="14" autocomplete="off" spellcheck="false"
+                 placeholder="TYPE YOUR NAME" aria-describedby="nameHint">
+          <p class="hint" id="nameHint" role="status">ENTER A PLAYER NAME TO UNLOCK START GAME.</p>
+
+          <fieldset style="border:0;padding:0;margin:.4em 0 0">
+            <legend class="field-label" style="padding:0">Select your team</legend>
+            <div class="team-grid" id="teamGrid" role="radiogroup" aria-label="Select your team"></div>
+          </fieldset>
+        </div>
+
+        <div class="preview-box">
+          <span class="field-label" style="margin:0">Jersey preview</span>
+          <canvas id="jerseyCanvas" width="96" height="96" role="img"
+                  aria-label="Preview of your selected team's simplified retro jersey"></canvas>
+          <span class="preview-name" id="previewName">INDIA</span>
+          <span class="preview-sub" id="previewSub">BLUE TIGERS • KIT #10</span>
+        </div>
+      </div>
+
+      <div class="controls-guide" aria-label="Controls guide">
+        <div><kbd>←</kbd><kbd>→</kbd> Move the player along the line</div>
+        <div>🖱 Mouse / drag on the pitch: aim the target</div>
+        <div><kbd>↑</kbd><kbd>↓</kbd> Fine-tune aim height</div>
+        <div><kbd>SPACE</kbd> Hold = power, release = kick</div>
+        <div><kbd>ENTER</kbd> Continue after a kick</div>
+        <div><kbd>R</kbd> Restart match</div>
+        <div><kbd>M</kbd> Mute / unmute</div>
+        <div>Touchscreen: pad moves &amp; aims + KICK button</div>
+      </div>
+
+      <div class="row mt">
+        <button class="btn big" id="btnStart" type="button" disabled>START GAME ▶</button>
+        <button class="btn alt" id="btnBackWelcome" type="button">← BACK</button>
+      </div>
+    </div>
+
+    <p class="disclaimer">
+      Unofficial fan project — not affiliated with FIFA or any national football federation.
+      Kits are original simplified designs using national colour families only.
+    </p>
+  </section>
+
+  <!-- ================= GAME ================= -->
+  <section id="screen-game" class="screen" aria-label="Match in progress">
+    <div id="stage">
+      <canvas id="field" width="480" height="270" role="img"
+              aria-label="Retro football stadium: the free-kick taker, the ball, a defensive wall, the goalkeeper and the goal."></canvas>
+
+      <div id="hud">
+        <div class="hud-panel">
+          <span class="k">PLAYER</span><span class="v" id="hudName">PLAYER</span>
+        </div>
+        <div class="hud-panel">
+          <span id="hudTeamChip" aria-hidden="true"></span><span class="v" id="hudTeam">INDIA</span>
+        </div>
+        <div class="hud-panel">
+          <span class="k">SCORE</span><span class="v big" id="hudScore">0000</span>
+        </div>
+        <div class="hud-panel">
+          <span class="k">GOALS</span><span class="v" id="hudGoals">0/3</span>
+        </div>
+        <div class="hud-panel">
+          <span class="k">KICK</span><span class="v" id="hudAttempt">1/3</span>
+          <span id="kickPips" aria-hidden="true"></span>
+        </div>
+        <span class="hud-spacer"></span>
+        <button class="hud-btn" id="btnTouchToggle" type="button" aria-pressed="false">TOUCH</button>
+        <button class="hud-btn" id="btnMute" type="button" aria-pressed="false" aria-label="Sound is on. Mute sound">♪ ON</button>
+        <button class="hud-btn" id="btnQuit" type="button">MENU</button>
+      </div>
+
+      <div id="tip" role="status"></div>
+
+      <div id="aimBar">
+        <span>POS <b id="aimPos">CENTRE</b></span>
+        <span>AIM <b id="aimSide">CENTRE</b></span>
+        <span>HEIGHT <b id="aimHeight">MID</b></span>
+      </div>
+
+      <div id="powerWrap">
+        <div class="plabel"><span>POWER</span><span id="powerPct">0%</span></div>
+        <div id="powerTrack">
+          <div id="powerIdeal"></div>
+          <div id="powerFill"></div>
+          <div id="powerNotch"></div>
+        </div>
+      </div>
+
+      <div id="banner">
+        <div id="bannerText">GOAL!</div>
+        <div id="bannerSub"></div>
+        <div id="bannerPts"></div>
+        <div id="bannerCont"></div>
+      </div>
+
+      <div id="touch">
+        <div class="tpad">
+          <button class="tbtn" id="tUp" type="button" aria-label="Aim higher">▲</button>
+          <button class="tbtn" id="tLeft" type="button" aria-label="Move player left">◀</button>
+          <button class="tbtn" id="tRight" type="button" aria-label="Move player right">▶</button>
+          <button class="tbtn" id="tDown" type="button" aria-label="Aim lower">▼</button>
+        </div>
+        <button id="tKick" type="button" aria-label="Hold to charge power, release to kick">HOLD<br>KICK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="screen-results" class="screen" aria-labelledby="resTitle">
+    <div class="panel">
+      <h2 class="panel-title" id="resTitle">★ FULL TIME — FREEDOM CUP ★</h2>
+      <div id="newHighTag"></div>
+
+      <div class="result-grid">
+        <div class="stat"><span class="k">Player</span><span class="v" id="rName">PLAYER</span></div>
+        <div class="stat"><span class="k">Team</span><span class="v" id="rTeam">INDIA</span></div>
+        <div class="stat"><span class="k">Final score</span><span class="v" id="rScore">0000</span></div>
+        <div class="stat"><span class="k">Goals</span><span class="v" id="rGoals">0 / 3</span></div>
+      </div>
+
+      <div id="ratingLine">ROOKIE</div>
+      <p id="resultMsg"></p>
+
+      <div class="row mt">
+        <button class="btn big" id="btnAgain" type="button">↻ PLAY AGAIN</button>
+        <button class="btn alt" id="btnChangePlayer" type="button">CHANGE PLAYER</button>
+        <button class="btn alt" id="btnChangeTeam" type="button">CHANGE TEAM</button>
+        <button class="btn alt" id="btnResultScores" type="button">🏆 HIGH SCORES</button>
+      </div>
+    </div>
+    <p class="disclaimer">Unofficial retro football game — not affiliated with FIFA or any national football federation.</p>
+  </section>
+
+  <!-- ================= HIGH SCORES ================= -->
+  <section id="screen-highscores" class="screen" aria-labelledby="hsTitle">
+    <div class="panel">
+      <h2 class="panel-title" id="hsTitle">🏆 FREEDOM CUP HALL OF FAME</h2>
+      <p class="small muted" id="hsCaption">TOP 10 — SAVED ON THIS DEVICE</p>
+      <div class="scroll-box">
+        <table class="hs-table">
+          <thead>
+            <tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th>
+                <th scope="col">Score</th><th scope="col">Goals</th><th scope="col">Date</th></tr>
+          </thead>
+          <tbody id="hsBody"></tbody>
+        </table>
+      </div>
+      <div class="row mt">
+        <button class="btn" id="btnHsBack" type="button">← BACK</button>
+        <button class="btn danger" id="btnHsClear" type="button">CLEAR TABLE</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="crt" aria-hidden="true"></div>
+  <div id="flicker" aria-hidden="true"></div>
+</main>
+
+<p id="liveRegion" class="visually-hidden" role="status" aria-live="polite"></p>
+
+<!--SCRIPT-->
+</body>
+</html>

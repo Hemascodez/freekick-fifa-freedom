@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check game.js)",
+      "Bash(python3 -)",
+      "Bash(python3 .build/build.py)",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)"
+    ]
+  }
+}
