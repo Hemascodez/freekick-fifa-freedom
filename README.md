@@ -34,6 +34,40 @@ python3 .build/build.py
 
 ---
 
+## 🎯 Three ways to play
+
+Chosen from the title screen:
+
+| Mode | What it does |
+|---|---|
+| **⚽ SOLO CHALLENGE** | Three kicks, your name on the global leaderboard. Individual ranking only — never counted toward a team match, even while one is live. |
+| **🏆 TEAM TOURNAMENT** | Same three kicks, but your score also adds to your team's total in the live KICKOFF 2026 match. |
+| **👥 PLAY WITH FRIENDS** | A private room, Discord-style. Up to 8 players take turns while everyone watches the standings. |
+
+### Playing with friends
+
+1. One player picks **PLAY WITH FRIENDS → CREATE ROOM** and gets a 4-letter code (e.g. `WJN2`).
+2. **COPY INVITE LINK** shares a URL that drops friends straight into the join screen — or they
+   just type the code.
+3. Everyone picks a kit and lands in the lobby. The host presses **KICK OFF**.
+4. Players take turns: each takes their **full set of three kicks** while the rest of the room
+   watches the live standings and whose turn it is. Nobody shoots at the same time — it's a
+   free kick, after all.
+5. Highest score wins. The host can hit **REMATCH** to run it again with the same players.
+
+Friendly matches are kept separate from the tournament — they don't touch the event
+leaderboard or any team totals.
+
+**Requires Supabase for cross-device play.** With no backend connected it falls back to
+**hot-seat mode**: everyone plays on one device, using **+ ADD ANOTHER PLAYER** to add seats
+and passing it around. Handy for a laptop at a desk with no setup at all.
+
+> The room state syncs by polling once a second, which reads as live for a turn-based
+> shootout. It is not a frame-synced realtime engine — players never shoot simultaneously,
+> so there's nothing that needs sub-second sync.
+
+---
+
 ## 🏆 KICKOFF 2026 — event mode
 
 Built for the HFI internal tournament, and it works unchanged for a public release.
@@ -64,8 +98,9 @@ score wins** and the organiser confirms who advances.
 
 ### Organiser panel
 
-Reachable from **⚙ ORGANISER** on the title screen. Passcode: `HFI2026` — change it in
-`event.js` (`EVENT.ADMIN_PASSCODE`).
+Reachable from **⚙ ORGANISER** on the title screen. Passcode: `HFI2026` (case-insensitive) —
+change it in `event.js` (`EVENT.ADMIN_PASSCODE`). Destructive buttons ask for a second click
+to confirm rather than using browser pop-ups, so they work inside embedded browsers too.
 
 | Control | What it does |
 |---|---|
@@ -97,8 +132,8 @@ leaderboard across everyone's laptops and phones:
 
 **2.** In the Supabase **SQL Editor**, run the schema from the organiser panel
 (**⚙ ORGANISER → Shared leaderboard → First-time setup → COPY SQL**). It creates a
-`scores` table and a single-row `tournament` table, and enables the read/insert policies
-an open leaderboard needs.
+`scores` table, a single-row `tournament` table and a `rooms` table for friendly matches,
+and enables the read/insert policies an open leaderboard needs.
 
 **3.** In Supabase go to **Project Settings → API** and copy the **Project URL** and the
 **anon public** key.
@@ -246,6 +281,8 @@ modern.html                modern build, self-contained
 game.js                    core game — states, physics, keeper, scoring, audio, UI
 event.js                   KICKOFF 2026: 8 teams, shot clock, bracket, Supabase client
 event-ui.js                event screens — instructions, leaderboard, organiser panel
+multiplayer.js             friendly-match rooms — store, session, turn handover
+room-ui.js                 room screens + the three play modes
 style.css                  retro skin
 style-modern.css           modern skin
 theme-modern.js            renderer overrides for the modern look (visuals only)

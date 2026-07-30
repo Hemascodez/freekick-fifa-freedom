@@ -3,7 +3,7 @@ root = pathlib.Path(__file__).resolve().parent.parent
 tpl = (root/'.build/index.template.html').read_text()
 js  = (root/'game.js').read_text()
 
-EVENT_JS = ['event.js', 'event-ui.js']
+EVENT_JS = ['event.js', 'event-ui.js', 'multiplayer.js', 'room-ui.js']
 
 def emit(out_html, css_name, extra_js, split_dir):
     css = (root/css_name).read_text()

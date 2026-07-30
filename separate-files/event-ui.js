@@ -333,20 +333,77 @@
      ========================================================================== */
 
   U.openAdmin = function () {
-    if (!this.adminUnlocked) {
-      const pass = window.prompt('Organiser passcode:');
-      if (pass === null) return;
-      if (String(pass).trim().toUpperCase() !== EVENT.ADMIN_PASSCODE) {
-        AUDIO.error();
-        window.alert('Incorrect passcode.');
-        return;
-      }
-      this.adminUnlocked = true;
-    }
     AUDIO.menuSelect();
     this.showScreen('admin');
     this.g.setState(S.HIGH_SCORES);
-    this.refreshAdmin();
+    this.syncAdminLock();
+    if (this.adminUnlocked) this.refreshAdmin();
+    else {
+      const f = $('admPass');
+      if (f) { f.value = ''; setTimeout(() => f.focus(), 60); }
+    }
+  };
+
+  /** show either the passcode gate or the panel itself */
+  U.syncAdminLock = function () {
+    const lock = $('admLock'), body = $('admBody');
+    if (lock) lock.style.display = this.adminUnlocked ? 'none' : 'block';
+    if (body) body.style.display = this.adminUnlocked ? 'block' : 'none';
+  };
+
+  U.tryAdminUnlock = function () {
+    const f = $('admPass');
+    const msg = $('admLockMsg');
+    const val = f ? String(f.value).trim().toUpperCase() : '';
+    if (val === EVENT.ADMIN_PASSCODE) {
+      this.adminUnlocked = true;
+      if (msg) { msg.textContent = ''; msg.className = 'adm-status'; }
+      AUDIO.menuSelect();
+      this.syncAdminLock();
+      this.refreshAdmin();
+    } else {
+      AUDIO.error();
+      if (msg) {
+        msg.textContent = val ? 'Incorrect passcode.' : 'Enter the organiser passcode.';
+        msg.className = 'adm-status offline';
+      }
+      if (f) f.select();
+    }
+  };
+
+  /** in-page message line, replacing window.alert */
+  U.admSay = function (text, kind) {
+    const el = $('admMsg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'adm-msg' + (kind ? ' ' + kind : '');
+    if (text) {
+      clearTimeout(this._admMsgT);
+      this._admMsgT = setTimeout(() => { el.textContent = ''; el.className = 'adm-msg'; }, 5000);
+    }
+  };
+
+  /**
+   * Two-step confirm on the button itself, replacing window.confirm.
+   * First click arms it, second click within 4s runs the action.
+   */
+  U.armConfirm = function (btn, label, action) {
+    if (btn.dataset.armed === '1') {
+      clearTimeout(btn._armT);
+      btn.dataset.armed = '0';
+      btn.textContent = btn.dataset.orig || label;
+      action();
+      return;
+    }
+    btn.dataset.orig = btn.textContent;
+    btn.dataset.armed = '1';
+    btn.textContent = 'SURE? CLICK AGAIN';
+    AUDIO.menuMove();
+    clearTimeout(btn._armT);
+    btn._armT = setTimeout(() => {
+      btn.dataset.armed = '0';
+      btn.textContent = btn.dataset.orig;
+    }, 4000);
   };
 
   U.refreshAdmin = function () {
@@ -440,18 +497,15 @@
       this.syncHud();
     };
     const cl = $('admClose');
-    if (cl) cl.onclick = () => this.closeLiveMatch(m, tot);
+    if (cl) cl.onclick = () => this.armConfirm(cl, 'CLOSE MATCH', () => this.closeLiveMatch(m, tot));
   };
 
   U.closeLiveMatch = function (m, tot) {
     const A = teamById(m.teamA), B = teamById(m.teamB);
-    const msg = 'Close this match?\n\n' +
-      A.name + ': ' + tot.a + ' (' + tot.playersA + ' players)\n' +
-      B.name + ': ' + tot.b + ' (' + tot.playersB + ' players)\n\n' +
-      'No more scores will count toward it.';
-    if (!window.confirm(msg)) return;
     TOURNEY.closeMatch(m.id, tot);
     AUDIO.menuSelect();
+    this.admSay('Match closed — ' + A.name + ' ' + tot.a + ' : ' + tot.b + ' ' + B.name +
+      '. Now confirm who advances.', 'ok');
     this.refreshAdmin();
     this.syncMatchNotice();
   };
@@ -498,19 +552,23 @@
     });
     $$('[data-reopen]', host).forEach((b) => {
       b.onclick = () => {
-        if (TOURNEY.liveMatch) { window.alert('Close the live match first.'); return; }
+        if (TOURNEY.liveMatch) {
+          this.admSay('Close the live match before reopening another.', 'warn');
+          return;
+        }
         TOURNEY.reopenMatch(b.dataset.reopen);
+        this.admSay('Match reopened — it is live again.', 'ok');
         this.refreshAdmin();
         this.syncMatchNotice();
       };
     });
     $$('[data-del]', host).forEach((b) => {
-      b.onclick = () => {
-        if (!window.confirm('Delete this match? Player scores stay on the leaderboard.')) return;
+      b.onclick = () => this.armConfirm(b, 'DELETE', () => {
         TOURNEY.deleteMatch(b.dataset.del);
+        this.admSay('Match deleted. Player scores are untouched.', 'ok');
         this.refreshAdmin();
         this.syncMatchNotice();
-      };
+      });
     });
   };
 
@@ -551,6 +609,12 @@
 
     /* organiser */
     click('btnWelcomeAdmin', () => { AUDIO.onUserGesture(); this.openAdmin(); });
+    click('btnAdmUnlock', () => this.tryAdminUnlock());
+    const pf = $('admPass');
+    if (pf) pf.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); this.tryAdminUnlock(); }
+    });
+
     click('btnAdmBack', () => {
       AUDIO.menuSelect();
       this.showScreen('welcome');
@@ -561,13 +625,14 @@
 
     click('btnAdmCreate', () => {
       const a = $('admTeamA').value, b = $('admTeamB').value, r = $('admRound').value;
-      if (!a || !b) { window.alert('Pick both teams first.'); return; }
+      if (!a || !b) { this.admSay('Pick both teams first.', 'warn'); return; }
       try {
         TOURNEY.createMatch(a, b, r);
         AUDIO.menuSelect();
+        this.admSay(roundLabel(r) + ' started — ' + teamById(a).name + ' shoots first.', 'ok');
         this.refreshAdmin();
         this.syncMatchNotice();
-      } catch (err) { window.alert(err.message); }
+      } catch (err) { this.admSay(err.message, 'warn'); }
     });
 
     click('btnAdmSaveBackend', () => {
@@ -586,20 +651,22 @@
       });
     });
 
-    click('btnAdmDisconnect', () => {
-      if (!window.confirm('Disconnect the leaderboard server? Scores will be saved on this device only.')) return;
+    const dis = $('btnAdmDisconnect');
+    if (dis) dis.addEventListener('click', () => this.armConfirm(dis, 'DISCONNECT', () => {
       BACKEND.clearConfig();
       $('admUrl').value = '';
       $('admKey').value = '';
+      this.admSay('Disconnected — scores now save on this device only.', 'ok');
       this.refreshAdmin();
-    });
+    }));
 
-    click('btnAdmResetTourney', () => {
-      if (!window.confirm('Reset the whole bracket? All matches and results are cleared. Player scores stay on the leaderboard.')) return;
+    const rst = $('btnAdmResetTourney');
+    if (rst) rst.addEventListener('click', () => this.armConfirm(rst, 'RESET BRACKET', () => {
       TOURNEY.reset();
+      this.admSay('Bracket reset. Player scores are untouched.', 'ok');
       this.refreshAdmin();
       this.syncMatchNotice();
-    });
+    }));
 
     click('btnAdmCopySql', () => {
       const sql = $('admSql');

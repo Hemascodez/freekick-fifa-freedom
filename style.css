@@ -1362,3 +1362,157 @@ kbd {
 @container app (max-width: 560px) {
   #kickPips { display: none; }
 }
+
+/* ==========================================================================
+   Play modes, friendly rooms, organiser gate
+   ========================================================================== */
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 780px;
+  margin-top: clamp(8px, 1.4vh, 16px);
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 1em .8em;
+  font-family: inherit;
+  color: var(--cream);
+  background: linear-gradient(180deg, #2c2c60 0%, var(--panel-2) 55%, #1a1a3c 100%);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 5px 14px rgba(0,0,0,.5);
+  cursor: pointer;
+  transition: transform .1s ease, border-color .15s linear, filter .15s linear;
+}
+.mode-card:hover { transform: translateY(-2px); border-color: var(--gold); filter: brightness(1.12); }
+.mode-card:active { transform: translateY(1px); }
+
+.mc-icon { font-size: clamp(18px, 3vw, 28px); line-height: 1; }
+.mc-title {
+  font-size: clamp(9px, 1.5vw, 14px);
+  font-weight: 900;
+  letter-spacing: .12em;
+  color: var(--gold);
+}
+.mc-sub {
+  font-size: clamp(7px, 1.05vw, 10.5px);
+  line-height: 1.45;
+  color: #b9b9e0;
+  text-align: center;
+}
+
+/* organiser gate + messages ------------------------------------------------ */
+
+#admLock { padding: .4em 0 .2em; }
+
+.adm-msg {
+  margin: 0 0 .6em;
+  min-height: 1.4em;
+  font-size: clamp(8px, 1.15vw, 12px);
+  letter-spacing: .04em;
+  color: var(--cream);
+}
+.adm-msg.ok   { color: #6cff8a; }
+.adm-msg.warn { color: #ffb3ba; }
+
+/* room entry --------------------------------------------------------------- */
+
+.room-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin: .8em 0;
+}
+
+.room-entry-card {
+  padding: .8em .9em;
+  background: #12122b;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.room-entry-card h3 {
+  margin: 0 0 .4em;
+  font-size: clamp(9px, 1.35vw, 13px);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.code-input {
+  width: 6em;
+  text-align: center;
+  letter-spacing: .3em;
+  font-size: clamp(13px, 2.2vw, 22px) !important;
+  text-transform: uppercase;
+}
+
+/* room inside -------------------------------------------------------------- */
+
+.room-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: .7em;
+}
+
+.room-code-box {
+  display: flex;
+  flex-direction: column;
+  padding: .4em .9em;
+  background: linear-gradient(180deg, #23234c, #15152f);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+}
+.rc-label {
+  font-size: clamp(6.5px, .95vw, 9px);
+  letter-spacing: .2em;
+  color: #b9b9e0;
+}
+.rc-code {
+  font-size: clamp(18px, 3.4vw, 34px);
+  font-weight: 900;
+  letter-spacing: .22em;
+  color: var(--gold);
+  line-height: 1.1;
+}
+
+.room-share {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  max-width: 60%;
+}
+.room-share .small { word-break: break-all; }
+
+.room-state {
+  margin: 0 0 .7em;
+  padding: .6em .8em;
+  font-size: clamp(9px, 1.4vw, 14px);
+  font-weight: 900;
+  letter-spacing: .06em;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  background: #12122b;
+  color: var(--cream);
+}
+.room-state.lobby    { border-left-color: var(--line); }
+.room-state.yourturn { border-left-color: #6cff8a; color: #6cff8a; animation: blink 1.2s steps(2,end) infinite; }
+.room-state.waiting  { border-left-color: var(--gold); color: #ffcf7a; }
+.room-state.done     { border-left-color: var(--gold); color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .room-state.yourturn { animation: none; }
+  .mode-card { transition: none; }
+  .mode-card:hover { transform: none; }
+}

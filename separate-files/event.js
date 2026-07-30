@@ -546,7 +546,10 @@ const TOURNEY = new Tournament();
   };
 
   G.submitEventScore = function () {
-    const live = TOURNEY.liveMatch;
+    /* SOLO is an individual run: it lands on the leaderboard but must never
+       be counted toward a team's match total, even while one is live. */
+    const solo = this.mode === 'solo';
+    const live = solo ? null : TOURNEY.liveMatch;
     const entry = {
       name: this.player.name,
       teamId: this.player.teamId,
@@ -555,8 +558,8 @@ const TOURNEY = new Tournament();
       attempts: CFG.ATTEMPTS,
       score: this.board.score,
       timeMs: this.eventTimeMs,
-      roundId: this.roundId || (live ? live.round : null),
-      matchId: this.matchId || (live ? live.id : null),
+      roundId: solo ? null : (this.roundId || (live ? live.round : null)),
+      matchId: solo ? null : (this.matchId || (live ? live.id : null)),
     };
     this.submitState = 'sending';
     this.ui.syncSubmit('sending');
