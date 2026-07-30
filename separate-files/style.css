@@ -1757,7 +1757,7 @@ body.playing .mute-global { top: 6px; right: 6px; opacity: .92; }
 .turn-banner {
   position: absolute;
   left: 50%;
-  top: 7%;
+  top: 13%;
   transform: translateX(-50%);
   z-index: 36;
   display: none;

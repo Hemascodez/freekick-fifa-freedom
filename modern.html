@@ -7177,7 +7177,9 @@ const SESSION = new RoomSession();
     const el = $('turnBanner');
     if (!el) return;
     const st = SESSION.state;
+    /* stand down while the big result banner is on screen, or they collide */
     const on = this.g.mode === 'room' && SESSION.active && st && st.status === 'playing' &&
+               this.g.state !== S.RESULT &&
                (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
     el.classList.toggle('show', !!on);
     if (!on) return;
@@ -7239,6 +7241,13 @@ const SESSION = new RoomSession();
   U.syncHud = function () {
     origSyncHud.call(this);
     this.renderRoomScoreboard();
+  };
+
+  /* state changes flip the banner between "your turn" and the result */
+  const origOnState = U.onState;
+  U.onState = function (st) {
+    origOnState.call(this, st);
+    if (this.g.mode === 'room') { this.renderTurnBanner(); this.renderSpectatorLabels(); }
   };
 
   const origRenderRoom = U.renderRoom;
