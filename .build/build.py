@@ -4,7 +4,7 @@ tpl = (root/'.build/index.template.html').read_text()
 js  = (root/'game.js').read_text()
 
 EVENT_JS = ['event.js', 'event-ui.js', 'multiplayer.js', 'room-ui.js', 'room-live.js',
-            'tournament.js', 'tournament-ui.js', 'room-teams.js', 'room-field.js', 'realtime.js', 'sound.js']
+            'tournament.js', 'tournament-ui.js', 'room-teams.js', 'room-field.js', 'realtime.js', 'spectate.js', 'sound.js']
 
 def emit(out_html, css_name, extra_js, split_dir):
     css = (root/css_name).read_text()

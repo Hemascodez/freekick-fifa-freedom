@@ -215,7 +215,11 @@ const LIVE = new Realtime();
     if (this._liveOff) { this._liveOff(); this._liveOff = null; }
     if (!BACKEND.online) return;                                  // hot-seat: no socket
     this._liveCode = this.code;
-    this._liveOff = LIVE.subscribe('room:' + this.code, () => {
+    this._liveOff = LIVE.subscribe('room:' + this.code, (ev, payload) => {
+      const g = window.FREEKICK;
+      /* watch the friend's ball fly, then hear the verdict */
+      if (ev === 'kick') { if (g && g.playRemoteKick) g.playRemoteKick(payload); return; }
+      if (ev === 'shot') { if (g && g.ui.showRemoteShot) g.ui.showRemoteShot(payload); this.poll(); return; }
       /* somebody changed the room — read it now rather than on the next tick */
       this.poll();
     });

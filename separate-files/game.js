@@ -2522,9 +2522,13 @@ class Game {
         break;
 
       case S.SPECTATE:
-        /* watching a room match: keep the scene alive, take no input */
-        this.keeper.updateIdle(dt);
-        this.kicker.update(dt);
+        /* watching a room match: replay a friend's shot if one is in flight,
+           otherwise just keep the scene breathing. Never takes input. */
+        if (this.remoteShot) this.updateRemoteFlight(dt);
+        else {
+          this.keeper.updateIdle(dt);
+          this.kicker.update(dt);
+        }
         break;
 
       default:

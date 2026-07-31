@@ -2352,3 +2352,87 @@ body.playing .mute-global { top: 6px; right: 6px; opacity: .92; }
 }
 .live-badge.on { color: #06210f; background: #37d67a; border-color: #1c7a44; }
 .live-badge.off { color: #ffcf7a; }
+
+/* ==========================================================================
+   Live shot announcement — what just happened, readable across a room
+   ========================================================================== */
+
+.shot-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 48;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  padding: 4%;
+}
+.shot-flash.show { display: flex; }
+
+.sf-card {
+  min-width: min(64%, 400px);
+  padding: clamp(10px, 2vw, 20px) clamp(12px, 2.4vw, 26px);
+  text-align: center;
+  background: rgba(8, 10, 24, .92);
+  border: 3px solid var(--line);
+  border-top-width: 8px;
+  border-radius: 12px;
+  box-shadow: 0 14px 46px rgba(0,0,0,.75);
+  animation: sfPop .32s cubic-bezier(.2,1.4,.35,1);
+}
+
+@keyframes sfPop {
+  0%   { transform: scale(.72) translateY(12px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.sf-icon { font-size: clamp(20px, 4.4vw, 40px); line-height: 1; }
+
+.sf-head {
+  font-size: clamp(16px, 3.6vw, 36px);
+  font-weight: 900;
+  letter-spacing: .04em;
+  line-height: 1.05;
+  margin: .1em 0;
+}
+.shot-flash.goal .sf-head { color: #6cff8a; text-shadow: 0 0 24px rgba(108,255,138,.55); }
+.shot-flash.save .sf-head { color: var(--sky); text-shadow: 0 0 22px rgba(78,168,255,.5); }
+.shot-flash.bad  .sf-head { color: #ff8f9a; }
+
+.shot-flash.goal .sf-card { border-color: #6cff8a; }
+.shot-flash.save .sf-card { border-color: var(--sky); }
+.shot-flash.bad  .sf-card { border-color: #ff5d73; }
+
+.sf-line {
+  font-size: clamp(9px, 1.7vw, 16px);
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: var(--cream);
+  line-height: 1.35;
+}
+
+.sf-points {
+  display: inline-block;
+  margin-top: .5em;
+  padding: .25em .9em;
+  font-size: clamp(9px, 1.6vw, 15px);
+  font-weight: 900;
+  letter-spacing: .1em;
+  color: var(--ink);
+  background: var(--gold);
+  border-radius: var(--pill, 999px);
+}
+
+.sf-summary {
+  margin-top: .6em;
+  padding-top: .5em;
+  border-top: 1px solid var(--line);
+  font-size: clamp(7.5px, 1.2vw, 11.5px);
+  font-weight: 900;
+  letter-spacing: .1em;
+  color: #9b9bc4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-card { animation: none; }
+}
