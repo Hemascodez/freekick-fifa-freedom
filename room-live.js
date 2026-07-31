@@ -34,9 +34,12 @@
   G.finishShot = function (res) {
     origFinish.call(this, res);
     if (this.mode === 'room' && SESSION.active) {
+      /* the live total is this round's board score on top of anything banked
+         in previous rounds, so multi-round scores accumulate on screen */
+      const me = SESSION.currentPlayer || {};
       SESSION.updateProgress({
-        score: this.board.score,
-        goals: this.board.goals,
+        score: (me.total || 0) + this.board.score,
+        goals: (me.totalGoals || 0) + this.board.goals,
         attempts: this.board.attempt,
         left: this.board.kicksLeft,
         status: this.board.kicksLeft > 0 ? 'playing' : 'finished',
@@ -78,7 +81,7 @@
   G.draw = function (dt) {
     origDraw.call(this, dt);
     if (this.mode !== 'room' || !SESSION.active) return;
-    if (!IN_MATCH[this.state] && this.state !== S.FINAL_RESULTS) return;
+    if (!IN_MATCH[this.state] && this.state !== S.FINAL_RESULTS && this.state !== S.SPECTATE) return;
 
     const R = this.renderer;
     const cur = SESSION.currentPlayer;
@@ -112,7 +115,7 @@
     const host = $('specLabels');
     if (!host) return;
     const on = this.g.mode === 'room' && SESSION.active &&
-               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
+               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS || this.g.state === S.SPECTATE);
     if (!on) { host.innerHTML = ''; return; }
 
     const cur = SESSION.currentPlayer;
@@ -141,7 +144,7 @@
     /* stand down while the big result banner is on screen, or they collide */
     const on = this.g.mode === 'room' && SESSION.active && st && st.status === 'playing' &&
                this.g.state !== S.RESULT &&
-               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
+               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS || this.g.state === S.SPECTATE);
     el.classList.toggle('show', !!on);
     if (!on) return;
 

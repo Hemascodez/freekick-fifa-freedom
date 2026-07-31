@@ -26,12 +26,12 @@
       <button class="mode-card" id="btnPlay" type="button">
         <span class="mc-icon" aria-hidden="true">⚽</span>
         <span class="mc-title">SOLO CHALLENGE</span>
-        <span class="mc-sub">3 free kicks · your name on the global leaderboard</span>
+        <span class="mc-sub">3 free kicks · your name on the universal leaderboard</span>
       </button>
       <button class="mode-card" id="btnPlayTeam" type="button">
         <span class="mc-icon" aria-hidden="true">🏆</span>
         <span class="mc-title">TEAM TOURNAMENT</span>
-        <span class="mc-sub">Play for your team in the KICKOFF 2026 bracket</span>
+        <span class="mc-sub">Organise or join a private tournament with match codes</span>
       </button>
       <button class="mode-card" id="btnPlayFriends" type="button">
         <span class="mc-icon" aria-hidden="true">👥</span>
@@ -41,15 +41,15 @@
     </div>
 
     <div class="row mt">
-      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 LEADERBOARD</button>
-      <button class="btn alt" id="btnWelcomeAdmin" type="button">⚙ ORGANISER</button>
+      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 FULL LEADERBOARD</button>
     </div>
 
-    <p class="disclaimer">
-      This is an unofficial retro football game and is not affiliated with FIFA or any national
-      football federation. Team names refer to national sides only; every kit and character is an
-      original simplified design created for this project.
-    </p>
+    <section class="home-board" aria-labelledby="homeBoardTitle">
+      <h2 class="hb-title" id="homeBoardTitle">🌍 UNIVERSAL LEADERBOARD</h2>
+      <p class="hb-sub">Top solo scores from everyone who has played FreeKick</p>
+      <ol class="hb-list" id="homeBoard"></ol>
+    </section>
+
   </section>
 
   <!-- ================= REGISTRATION / TEAM SELECT ================= -->
@@ -101,7 +101,7 @@
       <p class="ins-who" id="insWho"></p>
       <p class="ins-match" id="insMatch"></p>
 
-      <ol class="ins-list">
+      <ol class="ins-list" id="insList">
         <li><b>Move</b> — press <kbd>←</kbd> <kbd>→</kbd> to walk the ball along the free-kick line and open up an angle.</li>
         <li><b>Aim</b> — move your <b>mouse or trackpad</b> over the pitch (or drag on a touchscreen). The target ring follows your pointer. <kbd>↑</kbd> <kbd>↓</kbd> fine-tune the height.</li>
         <li><b>Kick</b> — <b>hold <kbd>SPACE</kbd></b> to build power, then <b>release</b> to shoot. The green band on the meter is the sweet spot.</li>
@@ -150,6 +150,7 @@
 
       <div id="specLabels" class="spec-labels" aria-hidden="true"></div>
       <div id="turnBanner" class="turn-banner" role="status"></div>
+      <div id="fieldOverlay" class="field-overlay" role="status"></div>
 
       <aside id="roomBoard" class="room-board" aria-label="Live room scoreboard"></aside>
 
@@ -185,6 +186,275 @@
           <button class="tbtn" id="tDown" type="button" aria-label="Aim lower">▼</button>
         </div>
         <button id="tKick" type="button" aria-label="Hold to charge power, release to kick">HOLD<br>KICK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TEAM MATCH: ROLE ================= -->
+  <section id="screen-teamrole" class="screen" aria-labelledby="roleTitle">
+    <div class="panel">
+      <h2 class="panel-title" id="roleTitle">🏆 TEAM MATCH</h2>
+      <p class="step-hint">Step 1 of 2 — who are you?</p>
+      <div class="mode-grid two">
+        <button class="mode-card" id="btnRoleOrganiser" type="button">
+          <span class="mc-icon" aria-hidden="true">🎛️</span>
+          <span class="mc-title">ORGANISER</span>
+          <span class="mc-sub">Create a private tournament, make matches, share codes</span>
+        </button>
+        <button class="mode-card" id="btnRolePlayer" type="button">
+          <span class="mc-icon" aria-hidden="true">🙋</span>
+          <span class="mc-title">PLAYER</span>
+          <span class="mc-sub">Join your organiser&rsquo;s match with the codes they gave you</span>
+        </button>
+      </div>
+      <div class="row mt">
+        <button class="btn alt" id="btnRoleMyDash" type="button">MY DASHBOARD</button>
+        <button class="btn alt" id="btnRoleBack" type="button">&larr; BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ORGANISER: CREATE TOURNAMENT ================= -->
+  <section id="screen-orgcreate" class="screen" aria-labelledby="orgTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="orgTitle">🎛️ CREATE A TOURNAMENT</h2>
+
+      <div class="adm-block">
+        <h3>1. Name and access code</h3>
+        <div class="adm-row">
+          <div class="adm-field grow">
+            <label class="field-label" for="orgName">Tournament name</label>
+            <input type="text" id="orgName" class="adm-input" maxlength="40" placeholder="e.g. HFI Freedom Cup" autocomplete="off">
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="orgCode">Access code (players need this)</label>
+            <input type="text" id="orgCode" class="adm-input code-input" maxlength="12" placeholder="ABCDE" autocomplete="off" spellcheck="false">
+          </div>
+          <button class="btn alt" id="btnOrgGenCode" type="button">NEW CODE</button>
+        </div>
+      </div>
+
+      <div class="adm-block">
+        <h3>2. Format and squad size</h3>
+        <div class="adm-row">
+          <div class="adm-field">
+            <label class="field-label" for="orgFormat">Tournament format</label>
+            <select id="orgFormat" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="orgMaxPerTeam">Max players per team</label>
+            <input type="number" id="orgMaxPerTeam" class="adm-input" min="1" max="12" value="3">
+          </div>
+        </div>
+      </div>
+
+      <div class="adm-block">
+        <h3>3. Teams taking part</h3>
+        <div class="team-grid" id="orgTeamGrid" role="group" aria-label="Select participating teams"></div>
+        <p class="small muted" id="orgTeamCount"></p>
+      </div>
+
+      <p class="adm-msg" id="orgMsg"></p>
+      <div class="row mt">
+        <button class="btn big" id="btnOrgCreate" type="button">CREATE TOURNAMENT &rarr;</button>
+        <button class="btn alt" id="btnOrgBack" type="button">&larr; BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ORGANISER: DASHBOARD ================= -->
+  <section id="screen-tdash" class="screen" aria-labelledby="dashTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="dashTitle">🎛️ TOURNAMENT DASHBOARD</h2>
+      <div id="dashHead" class="dash-head"></div>
+
+      <div class="adm-block">
+        <h3>Create a match</h3>
+        <div class="adm-row">
+          <div class="adm-field">
+            <label class="field-label" for="dashTeamA">Team 1</label>
+            <select id="dashTeamA" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="dashTeamB">Team 2</label>
+            <select id="dashTeamB" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="dashStage">Stage</label>
+            <select id="dashStage" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="dashCap">Max per team</label>
+            <input type="number" id="dashCap" class="adm-input" min="1" max="12" value="3">
+          </div>
+          <button class="btn" id="btnDashCreateMatch" type="button">CREATE MATCH</button>
+        </div>
+        <p class="small muted">Each match gets its own room code. Share the tournament access code plus that room code with the players in it.</p>
+      </div>
+
+      <div class="adm-block">
+        <h3>Matches, live scores &amp; who advances</h3>
+        <div id="dashMatches"></div>
+      </div>
+
+      <p class="adm-msg" id="dashMsg"></p>
+      <div class="row mt">
+        <button class="btn alt" id="btnDashRefresh" type="button">&#8635; REFRESH</button>
+        <button class="btn alt" id="btnDashBack" type="button">&larr; HOME</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PLAYER: FIND TOURNAMENT / MATCH ================= -->
+  <section id="screen-tjoin" class="screen" aria-labelledby="joinTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="joinTitle">🙋 JOIN A TEAM MATCH</h2>
+
+      <div id="joinStep1">
+        <p class="step-hint">Step 1 &mdash; find your organiser&rsquo;s tournament</p>
+        <div class="join-list" id="joinList"></div>
+
+        <div id="joinGate" style="display:none">
+          <div class="adm-block">
+            <h3>Access code for <span id="joinPickedName"></span></h3>
+            <div class="adm-row">
+              <div class="adm-field grow">
+                <label class="field-label" for="joinAccess">Tournament access code</label>
+                <input type="text" id="joinAccess" class="adm-input code-input" maxlength="12" placeholder="CODE" autocomplete="off" spellcheck="false">
+              </div>
+              <button class="btn" id="btnJoinAccess" type="button">CONTINUE &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="joinStep2" style="display:none">
+        <p class="step-hint">Step 2 &mdash; pick your match and join</p>
+        <p class="join-tname" id="joinTName"></p>
+        <div class="join-list" id="joinMatches"></div>
+
+        <div id="joinMatchForm" style="display:none">
+          <div class="adm-block">
+            <h3 id="joinMatchTitle"></h3>
+            <div class="adm-row">
+              <div class="adm-field">
+                <label class="field-label" for="joinRoomCode">Match room code</label>
+                <input type="text" id="joinRoomCode" class="adm-input code-input" maxlength="6" placeholder="ROOM" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="adm-field grow">
+                <label class="field-label" for="joinPlayerName">Your name</label>
+                <input type="text" id="joinPlayerName" class="adm-input" maxlength="24" placeholder="YOUR NAME" autocomplete="off">
+              </div>
+            </div>
+            <span class="field-label">Your team (only these two are playing)</span>
+            <div class="team-grid two" id="joinTeamPick" role="radiogroup" aria-label="Select your team"></div>
+            <div class="row mt" style="justify-content:flex-start">
+              <button class="btn big" id="btnJoinMatch" type="button">JOIN MATCH &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="adm-msg" id="joinMsg"></p>
+      <div class="row mt">
+        <button class="btn alt" id="btnJoinRefreshList" type="button">&#8635; REFRESH</button>
+        <button class="btn alt" id="btnJoinStepBack" type="button">&larr; TOURNAMENTS</button>
+        <button class="btn alt" id="btnJoinBack" type="button">&larr; BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ROOM (friendly + tournament match rooms) ================= -->
+  <section id="screen-room" class="screen" aria-labelledby="roomTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="roomTitle">👥 MATCH ROOM</h2>
+
+      <!-- entry: only used by the friendly Play With Friends flow -->
+      <div id="roomEntry">
+        <p class="small muted" id="roomTransport"></p>
+
+        <div class="adm-block">
+          <h3>Your name</h3>
+          <div class="adm-row">
+            <div class="adm-field grow">
+              <label class="field-label" for="roomName">Name</label>
+              <input type="text" id="roomName" class="adm-input" maxlength="24" placeholder="YOUR NAME" autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-block" id="roomCreateBlock">
+          <h3>Host a new room — pick the two competing teams</h3>
+          <div class="adm-row">
+            <div class="adm-field">
+              <label class="field-label" for="roomTeamA">Team 1</label>
+              <select id="roomTeamA" class="adm-select"></select>
+            </div>
+            <div class="adm-field">
+              <label class="field-label" for="roomTeamB">Team 2</label>
+              <select id="roomTeamB" class="adm-select"></select>
+            </div>
+            <div class="adm-field">
+              <label class="field-label" for="roomRounds">Rounds</label>
+              <input type="number" id="roomRounds" class="adm-input" min="1" max="10" value="1">
+            </div>
+            <button class="btn" id="btnRoomCreate" type="button">CREATE ROOM</button>
+          </div>
+          <p class="small muted">Each round, every player takes 3 free kicks (turns alternate between teams). Highest combined team score after all rounds wins.</p>
+        </div>
+
+        <div class="adm-block">
+          <h3>Or join with a code</h3>
+          <div class="adm-row">
+            <div class="adm-field">
+              <label class="field-label" for="roomCode">Room code</label>
+              <input type="text" id="roomCode" class="adm-input code-input" maxlength="6" placeholder="CODE" autocomplete="off" spellcheck="false">
+            </div>
+            <button class="btn alt" id="btnRoomJoin" type="button">JOIN ROOM</button>
+          </div>
+        </div>
+
+        <div class="adm-block">
+          <h3>Which side are you on?</h3>
+          <div class="team-grid two" id="roomTeamGrid" role="radiogroup" aria-label="Select your team"></div>
+          <p class="small muted" id="roomSideHint"></p>
+          <p class="adm-msg" id="roomMsg"></p>
+        </div>
+      </div>
+
+      <!-- inside a room -->
+      <div id="roomInside" style="display:none">
+        <div class="room-code-bar">
+          <span id="liveBadge" class="live-badge off" title="Connection mode">◌ POLLING</span>
+          <span class="small muted">ROOM CODE</span>
+          <span class="rc-code" id="roomCodeOut">----</span>
+          <button class="btn alt tiny" id="btnRoomCopy" type="button">COPY LINK</button>
+          <span class="small muted" id="roomShareHint"></span>
+        </div>
+
+        <p class="room-state" id="roomState"></p>
+
+        <div class="room-team-bar" id="roomTeamBar"></div>
+        <div class="turn-prompt" id="turnPrompt" role="status"></div>
+
+        <div class="scroll-box">
+          <table class="hs-table">
+            <thead><tr>
+              <th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th>
+              <th scope="col">Goals</th><th scope="col">Score</th><th scope="col">Kicks</th><th scope="col">Status</th>
+            </tr></thead>
+            <tbody id="roomPlayersBody"></tbody>
+          </table>
+        </div>
+
+        <div id="roomFinal" class="room-final"></div>
+
+        <div class="row mt" id="roomActions"></div>
+        <p class="adm-msg" id="roomMsg2"></p>
+      </div>
+
+      <div class="row mt">
+        <button class="btn alt" id="btnRoomBack" type="button">&larr; BACK</button>
       </div>
     </div>
   </section>
@@ -266,193 +536,7 @@
     </div>
   </section>
 
-  <!-- ================= ORGANISER ================= -->
-  <section id="screen-admin" class="screen" aria-labelledby="admTitle">
-    <div class="panel wide">
-      <h2 class="panel-title" id="admTitle">⚙ ORGANISER — MATCH CONTROL</h2>
-
-      <div id="admBody">
-      <p class="adm-msg" id="admMsg"></p>
-
-      <div class="adm-block">
-        <h3>Create match</h3>
-        <div class="adm-row">
-          <div class="adm-field">
-            <label class="field-label" for="admRound">Round</label>
-            <select id="admRound" class="adm-select"></select>
-          </div>
-          <div class="adm-field">
-            <label class="field-label" for="admTeamA">Team 1 — shoots first</label>
-            <select id="admTeamA" class="adm-select"></select>
-          </div>
-          <div class="adm-field">
-            <label class="field-label" for="admTeamB">Team 2 — shoots second</label>
-            <select id="admTeamB" class="adm-select"></select>
-          </div>
-          <button class="btn" id="btnAdmCreate" type="button">START MATCH</button>
-        </div>
-        <p class="small muted" id="admEligibleHint"></p>
-      </div>
-
-      <div class="adm-block">
-        <h3>Live match</h3>
-        <div id="admLive"></div>
-      </div>
-
-      <div class="adm-block">
-        <h3>All matches &amp; who advances</h3>
-        <div id="admMatches"></div>
-        <div class="row mt" style="justify-content:flex-start">
-          <button class="btn danger" id="btnAdmResetTourney" type="button">RESET BRACKET</button>
-        </div>
-      </div>
-
-      <div class="adm-block">
-        <h3>Shared leaderboard (Supabase)</h3>
-        <p class="adm-status" id="admBackendStatus"></p>
-        <div class="adm-row">
-          <div class="adm-field grow">
-            <label class="field-label" for="admUrl">Project URL</label>
-            <input type="text" id="admUrl" class="adm-input" placeholder="https://xxxx.supabase.co" spellcheck="false">
-          </div>
-          <div class="adm-field grow">
-            <label class="field-label" for="admKey">Anon public key</label>
-            <input type="text" id="admKey" class="adm-input" placeholder="eyJhbGciOi..." spellcheck="false">
-          </div>
-          <button class="btn" id="btnAdmSaveBackend" type="button">SAVE &amp; TEST</button>
-          <button class="btn alt" id="btnAdmDisconnect" type="button">DISCONNECT</button>
-        </div>
-        <details class="adm-details">
-          <summary>First-time setup — run this SQL in Supabase, then paste your URL + anon key above</summary>
-          <button class="btn alt tiny" id="btnAdmCopySql" type="button">COPY SQL</button>
-<pre id="admSql">create table if not exists scores (
-  id          bigserial primary key,
-  player_name text not null,
-  team_id     text not null,
-  team_name   text,
-  goals       int  default 0,
-  attempts    int  default 3,
-  score       int  default 0,
-  time_ms     int  default 0,
-  round_id    text,
-  match_id    text,
-  created_at  timestamptz default now()
-);
-
-create table if not exists tournament (
-  id         int primary key,
-  state      jsonb not null,
-  updated_at timestamptz default now()
-);
-
--- friendly-match rooms (PLAY WITH FRIENDS)
-create table if not exists rooms (
-  code       text primary key,
-  state      jsonb not null,
-  updated_at timestamptz default now()
-);
-
-alter table scores     enable row level security;
-alter table tournament enable row level security;
-alter table rooms      enable row level security;
-
-create policy "read scores"    on scores     for select using (true);
-create policy "add scores"     on scores     for insert with check (true);
-create policy "read bracket"   on tournament for select using (true);
-create policy "add bracket"    on tournament for insert with check (true);
-create policy "edit bracket"   on tournament for update using (true);
-create policy "read rooms"     on rooms      for select using (true);
-create policy "add rooms"      on rooms      for insert with check (true);
-create policy "edit rooms"     on rooms      for update using (true);</pre>
-          <p class="small muted">
-            These policies let anyone read and add scores, which is what an open event leaderboard
-            needs. Anyone who views the page can read the anon key, so treat the leaderboard as
-            public and don't reuse this project for confidential data.
-          </p>
-        </details>
-      </div>
-
-      </div><!-- /admBody -->
-
-      <div class="row mt">
-        <button class="btn" id="btnAdmBack" type="button">← BACK</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= FRIENDLY MATCH ROOM ================= -->
-  <section id="screen-room" class="screen" aria-labelledby="roomTitle">
-    <div class="panel wide">
-      <h2 class="panel-title" id="roomTitle">👥 PLAY WITH FRIENDS</h2>
-
-      <!-- not in a room yet -->
-      <div id="roomEntry">
-        <p class="small muted" id="roomTransport"></p>
-        <div class="room-entry-grid">
-          <div class="room-entry-card">
-            <h3>Start a new room</h3>
-            <p class="small muted">You'll get a 4-letter code to share. You control when the match starts.</p>
-            <div class="adm-row">
-              <div class="adm-field grow">
-                <label class="field-label" for="roomName">Your name</label>
-                <input type="text" id="roomName" class="adm-input" maxlength="24" placeholder="YOUR NAME" autocomplete="off">
-              </div>
-              <button class="btn" id="btnRoomCreate" type="button">CREATE ROOM</button>
-            </div>
-          </div>
-          <div class="room-entry-card">
-            <h3>Join a friend's room</h3>
-            <p class="small muted">Type the code they share with you (or open their link).</p>
-            <div class="adm-row">
-              <div class="adm-field">
-                <label class="field-label" for="roomCode">Room code</label>
-                <input type="text" id="roomCode" class="adm-input code-input" maxlength="4" placeholder="ABCD" autocomplete="off" spellcheck="false">
-              </div>
-              <button class="btn" id="btnRoomJoin" type="button">JOIN</button>
-            </div>
-          </div>
-        </div>
-        <p class="field-label" style="margin-top:1em">Pick your kit</p>
-        <div class="team-grid" id="roomTeamGrid" role="radiogroup" aria-label="Select your kit"></div>
-        <p class="adm-msg" id="roomMsg"></p>
-      </div>
-
-      <!-- inside a room -->
-      <div id="roomInside" style="display:none">
-        <div class="room-head">
-          <div class="room-code-box">
-            <span class="rc-label">ROOM CODE</span>
-            <span class="rc-code" id="roomCodeOut">----</span>
-          </div>
-          <div class="room-share">
-            <button class="btn alt tiny" id="btnRoomCopy" type="button">COPY INVITE LINK</button>
-            <span class="small muted" id="roomShareHint"></span>
-          </div>
-        </div>
-
-        <p class="room-state" id="roomState"></p>
-
-        <div class="scroll-box">
-          <table class="hs-table">
-            <thead><tr>
-              <th scope="col">#</th><th scope="col">Player</th><th scope="col">Kit</th>
-              <th scope="col">Goals</th><th scope="col">Score</th><th scope="col">Time</th><th scope="col">Status</th>
-            </tr></thead>
-            <tbody id="roomPlayersBody"></tbody>
-          </table>
-        </div>
-
-        <div id="roomFinal" class="room-final"></div>
-
-        <div class="row mt" id="roomActions"></div>
-        <p class="adm-msg" id="roomMsg2"></p>
-      </div>
-
-      <div class="row mt">
-        <button class="btn" id="btnRoomBack" type="button">← BACK TO MENU</button>
-      </div>
-    </div>
-  </section>
+  <div id="popup" class="popup-host" aria-live="polite"></div>
 
   <button id="btnMuteGlobal" class="mute-global" type="button"
           aria-pressed="false" aria-label="Sound is on. Mute sound" title="Sound on — click to mute (M)">🔊</button>

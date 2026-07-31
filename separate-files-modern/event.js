@@ -49,12 +49,22 @@ const ROUNDS = [
 
 const roundLabel = (id) => (ROUNDS.find((r) => r.id === id) || { label: id }).label;
 
+/* Match formats an organiser can pick per match. */
+const FORMATS = [
+  { id: 'kicks', label: '3 Free Kicks', short: '3 KICKS' },
+  { id: 'rapid', label: '1-Min Rapid-Fire', short: 'RAPID 60s' },
+];
+const formatOf = (m) => (m && m.format === 'rapid' ? 'rapid' : 'kicks');
+const isRapid = (m) => formatOf(m) === 'rapid';
+const formatShort = (m) => (isRapid(m) ? 'RAPID 60s' : '3 KICKS');
+
 /* ==========================================================================
    2. CONFIG / CONSTANTS
    ========================================================================== */
 
 const EVENT = {
-  SHOT_CLOCK: 20,             // seconds allowed per attempt
+  SHOT_CLOCK: 20,             // seconds allowed per attempt (3-kick format)
+  RAPID_SECONDS: 60,          // total time in 1-minute rapid-fire format
   WARN_AT: 5,                 // countdown turns urgent here
   BRAND: 'KICKOFF 2026',
   BACKEND_KEY: 'kickoff2026_backend_v1',
@@ -94,7 +104,7 @@ class ShotClock {
 
   /** returns true on the frame the clock runs out */
   tick(dt) {
-    if (!this.running || this.expired) return false;
+    if (this.disabled || !this.running || this.expired) return false;
     this.left -= dt;
     this.used += dt;
     if (this.left <= EVENT.WARN_AT) {
@@ -321,13 +331,14 @@ class Tournament {
 
   matchById(id) { return this.state.matches.find((m) => m.id === id) || null; }
 
-  createMatch(teamA, teamB, round) {
+  createMatch(teamA, teamB, round, format) {
     if (teamA === teamB) throw new Error('A team cannot play itself.');
     if (this.liveMatch) throw new Error('Close the current match before starting another.');
     const m = {
       id: 'm' + Date.now(),
       round,
       teamA, teamB,
+      format: format === 'rapid' ? 'rapid' : 'kicks',
       status: 'live',
       currentTeam: teamA,       // team A shoots first, then team B
       winner: null,
@@ -355,7 +366,18 @@ class Tournament {
     m.closedAt = new Date().toISOString();
     m.scoreA = totals.a;
     m.scoreB = totals.b;
-    m.winner = totals.a === totals.b ? null : (totals.a > totals.b ? m.teamA : m.teamB);
+    m.goalsA = totals.aGoals;
+    m.goalsB = totals.bGoals;
+    /* rapid-fire is decided by goals (points break ties); 3-kick by points */
+    const rapid = isRapid(m);
+    const av = rapid ? totals.aGoals : totals.a;
+    const bv = rapid ? totals.bGoals : totals.b;
+    const tieA = rapid ? totals.a : totals.aGoals;   // tie-breaker metric
+    const tieB = rapid ? totals.b : totals.bGoals;
+    let winner = null;
+    if (av !== bv) winner = av > bv ? m.teamA : m.teamB;
+    else if (tieA !== tieB) winner = tieA > tieB ? m.teamA : m.teamB;
+    m.winner = winner;
     this.touch();
     return m;
   }
@@ -457,13 +479,19 @@ class Tournament {
 
   /** totals for one match, from the raw score rows */
   matchTotals(match, scoreRows) {
-    let a = 0, b = 0, pa = 0, pb = 0;
+    let a = 0, b = 0, ag = 0, bg = 0, pa = 0, pb = 0;
     (scoreRows || []).forEach((r) => {
       if (r.match_id !== match.id) return;
-      if (r.team_id === match.teamA) { a += r.score || 0; pa++; }
-      else if (r.team_id === match.teamB) { b += r.score || 0; pb++; }
+      if (r.team_id === match.teamA) { a += r.score || 0; ag += r.goals || 0; pa++; }
+      else if (r.team_id === match.teamB) { b += r.score || 0; bg += r.goals || 0; pb++; }
     });
-    return { a, b, playersA: pa, playersB: pb };
+    /* headline is the metric that decides the match: goals for rapid-fire,
+       points for 3-kick. `a`/`b` stay as points for the tie-breaker + display. */
+    const rapid = isRapid(match);
+    return {
+      a, b, aGoals: ag, bGoals: bg, playersA: pa, playersB: pb,
+      headA: rapid ? ag : a, headB: rapid ? bg : b, rapid,
+    };
   }
 }
 
@@ -598,6 +626,7 @@ const TOURNEY = new Tournament();
     origDraw.call(this, dt);
     const c = this.clock;
     if (!c) return;
+    if (this.rapidFire) return;   // rapid-fire draws its own 60s clock
     const showing = this.state === S.AIMING || this.state === S.CHARGING;
     if (!showing && !c.expired) return;
 

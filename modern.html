@@ -1046,12 +1046,12 @@ kbd {
       <button class="mode-card" id="btnPlay" type="button">
         <span class="mc-icon" aria-hidden="true">⚽</span>
         <span class="mc-title">SOLO CHALLENGE</span>
-        <span class="mc-sub">3 free kicks · your name on the global leaderboard</span>
+        <span class="mc-sub">3 free kicks · your name on the universal leaderboard</span>
       </button>
       <button class="mode-card" id="btnPlayTeam" type="button">
         <span class="mc-icon" aria-hidden="true">🏆</span>
         <span class="mc-title">TEAM TOURNAMENT</span>
-        <span class="mc-sub">Play for your team in the KICKOFF 2026 bracket</span>
+        <span class="mc-sub">Organise or join a private tournament with match codes</span>
       </button>
       <button class="mode-card" id="btnPlayFriends" type="button">
         <span class="mc-icon" aria-hidden="true">👥</span>
@@ -1061,15 +1061,15 @@ kbd {
     </div>
 
     <div class="row mt">
-      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 LEADERBOARD</button>
-      <button class="btn alt" id="btnWelcomeAdmin" type="button">⚙ ORGANISER</button>
+      <button class="btn alt" id="btnWelcomeScores" type="button">🏆 FULL LEADERBOARD</button>
     </div>
 
-    <p class="disclaimer">
-      This is an unofficial retro football game and is not affiliated with FIFA or any national
-      football federation. Team names refer to national sides only; every kit and character is an
-      original simplified design created for this project.
-    </p>
+    <section class="home-board" aria-labelledby="homeBoardTitle">
+      <h2 class="hb-title" id="homeBoardTitle">🌍 UNIVERSAL LEADERBOARD</h2>
+      <p class="hb-sub">Top solo scores from everyone who has played FreeKick</p>
+      <ol class="hb-list" id="homeBoard"></ol>
+    </section>
+
   </section>
 
   <!-- ================= REGISTRATION / TEAM SELECT ================= -->
@@ -1121,7 +1121,7 @@ kbd {
       <p class="ins-who" id="insWho"></p>
       <p class="ins-match" id="insMatch"></p>
 
-      <ol class="ins-list">
+      <ol class="ins-list" id="insList">
         <li><b>Move</b> — press <kbd>←</kbd> <kbd>→</kbd> to walk the ball along the free-kick line and open up an angle.</li>
         <li><b>Aim</b> — move your <b>mouse or trackpad</b> over the pitch (or drag on a touchscreen). The target ring follows your pointer. <kbd>↑</kbd> <kbd>↓</kbd> fine-tune the height.</li>
         <li><b>Kick</b> — <b>hold <kbd>SPACE</kbd></b> to build power, then <b>release</b> to shoot. The green band on the meter is the sweet spot.</li>
@@ -1170,6 +1170,7 @@ kbd {
 
       <div id="specLabels" class="spec-labels" aria-hidden="true"></div>
       <div id="turnBanner" class="turn-banner" role="status"></div>
+      <div id="fieldOverlay" class="field-overlay" role="status"></div>
 
       <aside id="roomBoard" class="room-board" aria-label="Live room scoreboard"></aside>
 
@@ -1205,6 +1206,275 @@ kbd {
           <button class="tbtn" id="tDown" type="button" aria-label="Aim lower">▼</button>
         </div>
         <button id="tKick" type="button" aria-label="Hold to charge power, release to kick">HOLD<br>KICK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TEAM MATCH: ROLE ================= -->
+  <section id="screen-teamrole" class="screen" aria-labelledby="roleTitle">
+    <div class="panel">
+      <h2 class="panel-title" id="roleTitle">🏆 TEAM MATCH</h2>
+      <p class="step-hint">Step 1 of 2 — who are you?</p>
+      <div class="mode-grid two">
+        <button class="mode-card" id="btnRoleOrganiser" type="button">
+          <span class="mc-icon" aria-hidden="true">🎛️</span>
+          <span class="mc-title">ORGANISER</span>
+          <span class="mc-sub">Create a private tournament, make matches, share codes</span>
+        </button>
+        <button class="mode-card" id="btnRolePlayer" type="button">
+          <span class="mc-icon" aria-hidden="true">🙋</span>
+          <span class="mc-title">PLAYER</span>
+          <span class="mc-sub">Join your organiser&rsquo;s match with the codes they gave you</span>
+        </button>
+      </div>
+      <div class="row mt">
+        <button class="btn alt" id="btnRoleMyDash" type="button">MY DASHBOARD</button>
+        <button class="btn alt" id="btnRoleBack" type="button">&larr; BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ORGANISER: CREATE TOURNAMENT ================= -->
+  <section id="screen-orgcreate" class="screen" aria-labelledby="orgTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="orgTitle">🎛️ CREATE A TOURNAMENT</h2>
+
+      <div class="adm-block">
+        <h3>1. Name and access code</h3>
+        <div class="adm-row">
+          <div class="adm-field grow">
+            <label class="field-label" for="orgName">Tournament name</label>
+            <input type="text" id="orgName" class="adm-input" maxlength="40" placeholder="e.g. HFI Freedom Cup" autocomplete="off">
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="orgCode">Access code (players need this)</label>
+            <input type="text" id="orgCode" class="adm-input code-input" maxlength="12" placeholder="ABCDE" autocomplete="off" spellcheck="false">
+          </div>
+          <button class="btn alt" id="btnOrgGenCode" type="button">NEW CODE</button>
+        </div>
+      </div>
+
+      <div class="adm-block">
+        <h3>2. Format and squad size</h3>
+        <div class="adm-row">
+          <div class="adm-field">
+            <label class="field-label" for="orgFormat">Tournament format</label>
+            <select id="orgFormat" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="orgMaxPerTeam">Max players per team</label>
+            <input type="number" id="orgMaxPerTeam" class="adm-input" min="1" max="12" value="3">
+          </div>
+        </div>
+      </div>
+
+      <div class="adm-block">
+        <h3>3. Teams taking part</h3>
+        <div class="team-grid" id="orgTeamGrid" role="group" aria-label="Select participating teams"></div>
+        <p class="small muted" id="orgTeamCount"></p>
+      </div>
+
+      <p class="adm-msg" id="orgMsg"></p>
+      <div class="row mt">
+        <button class="btn big" id="btnOrgCreate" type="button">CREATE TOURNAMENT &rarr;</button>
+        <button class="btn alt" id="btnOrgBack" type="button">&larr; BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ORGANISER: DASHBOARD ================= -->
+  <section id="screen-tdash" class="screen" aria-labelledby="dashTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="dashTitle">🎛️ TOURNAMENT DASHBOARD</h2>
+      <div id="dashHead" class="dash-head"></div>
+
+      <div class="adm-block">
+        <h3>Create a match</h3>
+        <div class="adm-row">
+          <div class="adm-field">
+            <label class="field-label" for="dashTeamA">Team 1</label>
+            <select id="dashTeamA" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="dashTeamB">Team 2</label>
+            <select id="dashTeamB" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="dashStage">Stage</label>
+            <select id="dashStage" class="adm-select"></select>
+          </div>
+          <div class="adm-field">
+            <label class="field-label" for="dashCap">Max per team</label>
+            <input type="number" id="dashCap" class="adm-input" min="1" max="12" value="3">
+          </div>
+          <button class="btn" id="btnDashCreateMatch" type="button">CREATE MATCH</button>
+        </div>
+        <p class="small muted">Each match gets its own room code. Share the tournament access code plus that room code with the players in it.</p>
+      </div>
+
+      <div class="adm-block">
+        <h3>Matches, live scores &amp; who advances</h3>
+        <div id="dashMatches"></div>
+      </div>
+
+      <p class="adm-msg" id="dashMsg"></p>
+      <div class="row mt">
+        <button class="btn alt" id="btnDashRefresh" type="button">&#8635; REFRESH</button>
+        <button class="btn alt" id="btnDashBack" type="button">&larr; HOME</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PLAYER: FIND TOURNAMENT / MATCH ================= -->
+  <section id="screen-tjoin" class="screen" aria-labelledby="joinTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="joinTitle">🙋 JOIN A TEAM MATCH</h2>
+
+      <div id="joinStep1">
+        <p class="step-hint">Step 1 &mdash; find your organiser&rsquo;s tournament</p>
+        <div class="join-list" id="joinList"></div>
+
+        <div id="joinGate" style="display:none">
+          <div class="adm-block">
+            <h3>Access code for <span id="joinPickedName"></span></h3>
+            <div class="adm-row">
+              <div class="adm-field grow">
+                <label class="field-label" for="joinAccess">Tournament access code</label>
+                <input type="text" id="joinAccess" class="adm-input code-input" maxlength="12" placeholder="CODE" autocomplete="off" spellcheck="false">
+              </div>
+              <button class="btn" id="btnJoinAccess" type="button">CONTINUE &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="joinStep2" style="display:none">
+        <p class="step-hint">Step 2 &mdash; pick your match and join</p>
+        <p class="join-tname" id="joinTName"></p>
+        <div class="join-list" id="joinMatches"></div>
+
+        <div id="joinMatchForm" style="display:none">
+          <div class="adm-block">
+            <h3 id="joinMatchTitle"></h3>
+            <div class="adm-row">
+              <div class="adm-field">
+                <label class="field-label" for="joinRoomCode">Match room code</label>
+                <input type="text" id="joinRoomCode" class="adm-input code-input" maxlength="6" placeholder="ROOM" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="adm-field grow">
+                <label class="field-label" for="joinPlayerName">Your name</label>
+                <input type="text" id="joinPlayerName" class="adm-input" maxlength="24" placeholder="YOUR NAME" autocomplete="off">
+              </div>
+            </div>
+            <span class="field-label">Your team (only these two are playing)</span>
+            <div class="team-grid two" id="joinTeamPick" role="radiogroup" aria-label="Select your team"></div>
+            <div class="row mt" style="justify-content:flex-start">
+              <button class="btn big" id="btnJoinMatch" type="button">JOIN MATCH &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="adm-msg" id="joinMsg"></p>
+      <div class="row mt">
+        <button class="btn alt" id="btnJoinRefreshList" type="button">&#8635; REFRESH</button>
+        <button class="btn alt" id="btnJoinStepBack" type="button">&larr; TOURNAMENTS</button>
+        <button class="btn alt" id="btnJoinBack" type="button">&larr; BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ROOM (friendly + tournament match rooms) ================= -->
+  <section id="screen-room" class="screen" aria-labelledby="roomTitle">
+    <div class="panel wide">
+      <h2 class="panel-title" id="roomTitle">👥 MATCH ROOM</h2>
+
+      <!-- entry: only used by the friendly Play With Friends flow -->
+      <div id="roomEntry">
+        <p class="small muted" id="roomTransport"></p>
+
+        <div class="adm-block">
+          <h3>Your name</h3>
+          <div class="adm-row">
+            <div class="adm-field grow">
+              <label class="field-label" for="roomName">Name</label>
+              <input type="text" id="roomName" class="adm-input" maxlength="24" placeholder="YOUR NAME" autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-block" id="roomCreateBlock">
+          <h3>Host a new room — pick the two competing teams</h3>
+          <div class="adm-row">
+            <div class="adm-field">
+              <label class="field-label" for="roomTeamA">Team 1</label>
+              <select id="roomTeamA" class="adm-select"></select>
+            </div>
+            <div class="adm-field">
+              <label class="field-label" for="roomTeamB">Team 2</label>
+              <select id="roomTeamB" class="adm-select"></select>
+            </div>
+            <div class="adm-field">
+              <label class="field-label" for="roomRounds">Rounds</label>
+              <input type="number" id="roomRounds" class="adm-input" min="1" max="10" value="1">
+            </div>
+            <button class="btn" id="btnRoomCreate" type="button">CREATE ROOM</button>
+          </div>
+          <p class="small muted">Each round, every player takes 3 free kicks (turns alternate between teams). Highest combined team score after all rounds wins.</p>
+        </div>
+
+        <div class="adm-block">
+          <h3>Or join with a code</h3>
+          <div class="adm-row">
+            <div class="adm-field">
+              <label class="field-label" for="roomCode">Room code</label>
+              <input type="text" id="roomCode" class="adm-input code-input" maxlength="6" placeholder="CODE" autocomplete="off" spellcheck="false">
+            </div>
+            <button class="btn alt" id="btnRoomJoin" type="button">JOIN ROOM</button>
+          </div>
+        </div>
+
+        <div class="adm-block">
+          <h3>Which side are you on?</h3>
+          <div class="team-grid two" id="roomTeamGrid" role="radiogroup" aria-label="Select your team"></div>
+          <p class="small muted" id="roomSideHint"></p>
+          <p class="adm-msg" id="roomMsg"></p>
+        </div>
+      </div>
+
+      <!-- inside a room -->
+      <div id="roomInside" style="display:none">
+        <div class="room-code-bar">
+          <span id="liveBadge" class="live-badge off" title="Connection mode">◌ POLLING</span>
+          <span class="small muted">ROOM CODE</span>
+          <span class="rc-code" id="roomCodeOut">----</span>
+          <button class="btn alt tiny" id="btnRoomCopy" type="button">COPY LINK</button>
+          <span class="small muted" id="roomShareHint"></span>
+        </div>
+
+        <p class="room-state" id="roomState"></p>
+
+        <div class="room-team-bar" id="roomTeamBar"></div>
+        <div class="turn-prompt" id="turnPrompt" role="status"></div>
+
+        <div class="scroll-box">
+          <table class="hs-table">
+            <thead><tr>
+              <th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th>
+              <th scope="col">Goals</th><th scope="col">Score</th><th scope="col">Kicks</th><th scope="col">Status</th>
+            </tr></thead>
+            <tbody id="roomPlayersBody"></tbody>
+          </table>
+        </div>
+
+        <div id="roomFinal" class="room-final"></div>
+
+        <div class="row mt" id="roomActions"></div>
+        <p class="adm-msg" id="roomMsg2"></p>
+      </div>
+
+      <div class="row mt">
+        <button class="btn alt" id="btnRoomBack" type="button">&larr; BACK</button>
       </div>
     </div>
   </section>
@@ -1286,193 +1556,7 @@ kbd {
     </div>
   </section>
 
-  <!-- ================= ORGANISER ================= -->
-  <section id="screen-admin" class="screen" aria-labelledby="admTitle">
-    <div class="panel wide">
-      <h2 class="panel-title" id="admTitle">⚙ ORGANISER — MATCH CONTROL</h2>
-
-      <div id="admBody">
-      <p class="adm-msg" id="admMsg"></p>
-
-      <div class="adm-block">
-        <h3>Create match</h3>
-        <div class="adm-row">
-          <div class="adm-field">
-            <label class="field-label" for="admRound">Round</label>
-            <select id="admRound" class="adm-select"></select>
-          </div>
-          <div class="adm-field">
-            <label class="field-label" for="admTeamA">Team 1 — shoots first</label>
-            <select id="admTeamA" class="adm-select"></select>
-          </div>
-          <div class="adm-field">
-            <label class="field-label" for="admTeamB">Team 2 — shoots second</label>
-            <select id="admTeamB" class="adm-select"></select>
-          </div>
-          <button class="btn" id="btnAdmCreate" type="button">START MATCH</button>
-        </div>
-        <p class="small muted" id="admEligibleHint"></p>
-      </div>
-
-      <div class="adm-block">
-        <h3>Live match</h3>
-        <div id="admLive"></div>
-      </div>
-
-      <div class="adm-block">
-        <h3>All matches &amp; who advances</h3>
-        <div id="admMatches"></div>
-        <div class="row mt" style="justify-content:flex-start">
-          <button class="btn danger" id="btnAdmResetTourney" type="button">RESET BRACKET</button>
-        </div>
-      </div>
-
-      <div class="adm-block">
-        <h3>Shared leaderboard (Supabase)</h3>
-        <p class="adm-status" id="admBackendStatus"></p>
-        <div class="adm-row">
-          <div class="adm-field grow">
-            <label class="field-label" for="admUrl">Project URL</label>
-            <input type="text" id="admUrl" class="adm-input" placeholder="https://xxxx.supabase.co" spellcheck="false">
-          </div>
-          <div class="adm-field grow">
-            <label class="field-label" for="admKey">Anon public key</label>
-            <input type="text" id="admKey" class="adm-input" placeholder="eyJhbGciOi..." spellcheck="false">
-          </div>
-          <button class="btn" id="btnAdmSaveBackend" type="button">SAVE &amp; TEST</button>
-          <button class="btn alt" id="btnAdmDisconnect" type="button">DISCONNECT</button>
-        </div>
-        <details class="adm-details">
-          <summary>First-time setup — run this SQL in Supabase, then paste your URL + anon key above</summary>
-          <button class="btn alt tiny" id="btnAdmCopySql" type="button">COPY SQL</button>
-<pre id="admSql">create table if not exists scores (
-  id          bigserial primary key,
-  player_name text not null,
-  team_id     text not null,
-  team_name   text,
-  goals       int  default 0,
-  attempts    int  default 3,
-  score       int  default 0,
-  time_ms     int  default 0,
-  round_id    text,
-  match_id    text,
-  created_at  timestamptz default now()
-);
-
-create table if not exists tournament (
-  id         int primary key,
-  state      jsonb not null,
-  updated_at timestamptz default now()
-);
-
--- friendly-match rooms (PLAY WITH FRIENDS)
-create table if not exists rooms (
-  code       text primary key,
-  state      jsonb not null,
-  updated_at timestamptz default now()
-);
-
-alter table scores     enable row level security;
-alter table tournament enable row level security;
-alter table rooms      enable row level security;
-
-create policy "read scores"    on scores     for select using (true);
-create policy "add scores"     on scores     for insert with check (true);
-create policy "read bracket"   on tournament for select using (true);
-create policy "add bracket"    on tournament for insert with check (true);
-create policy "edit bracket"   on tournament for update using (true);
-create policy "read rooms"     on rooms      for select using (true);
-create policy "add rooms"      on rooms      for insert with check (true);
-create policy "edit rooms"     on rooms      for update using (true);</pre>
-          <p class="small muted">
-            These policies let anyone read and add scores, which is what an open event leaderboard
-            needs. Anyone who views the page can read the anon key, so treat the leaderboard as
-            public and don't reuse this project for confidential data.
-          </p>
-        </details>
-      </div>
-
-      </div><!-- /admBody -->
-
-      <div class="row mt">
-        <button class="btn" id="btnAdmBack" type="button">← BACK</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= FRIENDLY MATCH ROOM ================= -->
-  <section id="screen-room" class="screen" aria-labelledby="roomTitle">
-    <div class="panel wide">
-      <h2 class="panel-title" id="roomTitle">👥 PLAY WITH FRIENDS</h2>
-
-      <!-- not in a room yet -->
-      <div id="roomEntry">
-        <p class="small muted" id="roomTransport"></p>
-        <div class="room-entry-grid">
-          <div class="room-entry-card">
-            <h3>Start a new room</h3>
-            <p class="small muted">You'll get a 4-letter code to share. You control when the match starts.</p>
-            <div class="adm-row">
-              <div class="adm-field grow">
-                <label class="field-label" for="roomName">Your name</label>
-                <input type="text" id="roomName" class="adm-input" maxlength="24" placeholder="YOUR NAME" autocomplete="off">
-              </div>
-              <button class="btn" id="btnRoomCreate" type="button">CREATE ROOM</button>
-            </div>
-          </div>
-          <div class="room-entry-card">
-            <h3>Join a friend's room</h3>
-            <p class="small muted">Type the code they share with you (or open their link).</p>
-            <div class="adm-row">
-              <div class="adm-field">
-                <label class="field-label" for="roomCode">Room code</label>
-                <input type="text" id="roomCode" class="adm-input code-input" maxlength="4" placeholder="ABCD" autocomplete="off" spellcheck="false">
-              </div>
-              <button class="btn" id="btnRoomJoin" type="button">JOIN</button>
-            </div>
-          </div>
-        </div>
-        <p class="field-label" style="margin-top:1em">Pick your kit</p>
-        <div class="team-grid" id="roomTeamGrid" role="radiogroup" aria-label="Select your kit"></div>
-        <p class="adm-msg" id="roomMsg"></p>
-      </div>
-
-      <!-- inside a room -->
-      <div id="roomInside" style="display:none">
-        <div class="room-head">
-          <div class="room-code-box">
-            <span class="rc-label">ROOM CODE</span>
-            <span class="rc-code" id="roomCodeOut">----</span>
-          </div>
-          <div class="room-share">
-            <button class="btn alt tiny" id="btnRoomCopy" type="button">COPY INVITE LINK</button>
-            <span class="small muted" id="roomShareHint"></span>
-          </div>
-        </div>
-
-        <p class="room-state" id="roomState"></p>
-
-        <div class="scroll-box">
-          <table class="hs-table">
-            <thead><tr>
-              <th scope="col">#</th><th scope="col">Player</th><th scope="col">Kit</th>
-              <th scope="col">Goals</th><th scope="col">Score</th><th scope="col">Time</th><th scope="col">Status</th>
-            </tr></thead>
-            <tbody id="roomPlayersBody"></tbody>
-          </table>
-        </div>
-
-        <div id="roomFinal" class="room-final"></div>
-
-        <div class="row mt" id="roomActions"></div>
-        <p class="adm-msg" id="roomMsg2"></p>
-      </div>
-
-      <div class="row mt">
-        <button class="btn" id="btnRoomBack" type="button">← BACK TO MENU</button>
-      </div>
-    </div>
-  </section>
+  <div id="popup" class="popup-host" aria-live="polite"></div>
 
   <button id="btnMuteGlobal" class="mute-global" type="button"
           aria-pressed="false" aria-label="Sound is on. Mute sound" title="Sound on — click to mute (M)">🔊</button>
@@ -3288,6 +3372,7 @@ const S = {
   NEXT_ATTEMPT: 'NEXT_ATTEMPT',
   FINAL_RESULTS: 'FINAL_RESULTS',
   HIGH_SCORES: 'HIGH_SCORES',
+  SPECTATE: 'SPECTATE',        // watching a room match on the field, no input
 };
 
 const IN_MATCH = { READY: 1, AIMING: 1, CHARGING: 1, FLIGHT: 1, RESULT: 1, NEXT_ATTEMPT: 1 };
@@ -3368,6 +3453,9 @@ class Input {
         if (e.key === 'Enter' && g.state === S.REGISTER) { e.preventDefault(); g.ui.tryStart(); }
         return;
       }
+
+      /* spectators watch the field but drive nothing (mute/restart handled above) */
+      if (g.state === S.SPECTATE) { this._maybePreventScroll(e); return; }
 
       switch (e.key) {
         case 'ArrowLeft': this.held.left = true; break;
@@ -4003,6 +4091,12 @@ class Game {
         else this.beginAttempt();
         break;
 
+      case S.SPECTATE:
+        /* watching a room match: keep the scene alive, take no input */
+        this.keeper.updateIdle(dt);
+        this.kicker.update(dt);
+        break;
+
       default:
         /* menus: keep the crowd alive behind the panels */
         this.keeper.updateIdle(dt);
@@ -4059,7 +4153,7 @@ class Game {
     R.drawGoalNet(this.time);
 
     const b = this.ball;
-    const showMatch = IN_MATCH[this.state] || this.state === S.FINAL_RESULTS;
+    const showMatch = IN_MATCH[this.state] || this.state === S.FINAL_RESULTS || this.state === S.SPECTATE;
 
     /* keeper sits just in front of the goal line */
     R.shadow(this.keeper.x, this.keeper.z, 0.62);
@@ -5116,12 +5210,22 @@ const ROUNDS = [
 
 const roundLabel = (id) => (ROUNDS.find((r) => r.id === id) || { label: id }).label;
 
+/* Match formats an organiser can pick per match. */
+const FORMATS = [
+  { id: 'kicks', label: '3 Free Kicks', short: '3 KICKS' },
+  { id: 'rapid', label: '1-Min Rapid-Fire', short: 'RAPID 60s' },
+];
+const formatOf = (m) => (m && m.format === 'rapid' ? 'rapid' : 'kicks');
+const isRapid = (m) => formatOf(m) === 'rapid';
+const formatShort = (m) => (isRapid(m) ? 'RAPID 60s' : '3 KICKS');
+
 /* ==========================================================================
    2. CONFIG / CONSTANTS
    ========================================================================== */
 
 const EVENT = {
-  SHOT_CLOCK: 20,             // seconds allowed per attempt
+  SHOT_CLOCK: 20,             // seconds allowed per attempt (3-kick format)
+  RAPID_SECONDS: 60,          // total time in 1-minute rapid-fire format
   WARN_AT: 5,                 // countdown turns urgent here
   BRAND: 'KICKOFF 2026',
   BACKEND_KEY: 'kickoff2026_backend_v1',
@@ -5161,7 +5265,7 @@ class ShotClock {
 
   /** returns true on the frame the clock runs out */
   tick(dt) {
-    if (!this.running || this.expired) return false;
+    if (this.disabled || !this.running || this.expired) return false;
     this.left -= dt;
     this.used += dt;
     if (this.left <= EVENT.WARN_AT) {
@@ -5388,13 +5492,14 @@ class Tournament {
 
   matchById(id) { return this.state.matches.find((m) => m.id === id) || null; }
 
-  createMatch(teamA, teamB, round) {
+  createMatch(teamA, teamB, round, format) {
     if (teamA === teamB) throw new Error('A team cannot play itself.');
     if (this.liveMatch) throw new Error('Close the current match before starting another.');
     const m = {
       id: 'm' + Date.now(),
       round,
       teamA, teamB,
+      format: format === 'rapid' ? 'rapid' : 'kicks',
       status: 'live',
       currentTeam: teamA,       // team A shoots first, then team B
       winner: null,
@@ -5422,7 +5527,18 @@ class Tournament {
     m.closedAt = new Date().toISOString();
     m.scoreA = totals.a;
     m.scoreB = totals.b;
-    m.winner = totals.a === totals.b ? null : (totals.a > totals.b ? m.teamA : m.teamB);
+    m.goalsA = totals.aGoals;
+    m.goalsB = totals.bGoals;
+    /* rapid-fire is decided by goals (points break ties); 3-kick by points */
+    const rapid = isRapid(m);
+    const av = rapid ? totals.aGoals : totals.a;
+    const bv = rapid ? totals.bGoals : totals.b;
+    const tieA = rapid ? totals.a : totals.aGoals;   // tie-breaker metric
+    const tieB = rapid ? totals.b : totals.bGoals;
+    let winner = null;
+    if (av !== bv) winner = av > bv ? m.teamA : m.teamB;
+    else if (tieA !== tieB) winner = tieA > tieB ? m.teamA : m.teamB;
+    m.winner = winner;
     this.touch();
     return m;
   }
@@ -5524,13 +5640,19 @@ class Tournament {
 
   /** totals for one match, from the raw score rows */
   matchTotals(match, scoreRows) {
-    let a = 0, b = 0, pa = 0, pb = 0;
+    let a = 0, b = 0, ag = 0, bg = 0, pa = 0, pb = 0;
     (scoreRows || []).forEach((r) => {
       if (r.match_id !== match.id) return;
-      if (r.team_id === match.teamA) { a += r.score || 0; pa++; }
-      else if (r.team_id === match.teamB) { b += r.score || 0; pb++; }
+      if (r.team_id === match.teamA) { a += r.score || 0; ag += r.goals || 0; pa++; }
+      else if (r.team_id === match.teamB) { b += r.score || 0; bg += r.goals || 0; pb++; }
     });
-    return { a, b, playersA: pa, playersB: pb };
+    /* headline is the metric that decides the match: goals for rapid-fire,
+       points for 3-kick. `a`/`b` stay as points for the tie-breaker + display. */
+    const rapid = isRapid(match);
+    return {
+      a, b, aGoals: ag, bGoals: bg, playersA: pa, playersB: pb,
+      headA: rapid ? ag : a, headB: rapid ? bg : b, rapid,
+    };
   }
 }
 
@@ -5665,6 +5787,7 @@ const TOURNEY = new Tournament();
     origDraw.call(this, dt);
     const c = this.clock;
     if (!c) return;
+    if (this.rapidFire) return;   // rapid-fire draws its own 60s clock
     const showing = this.state === S.AIMING || this.state === S.CHARGING;
     if (!showing && !c.expired) return;
 
@@ -5764,8 +5887,10 @@ const TOURNEY = new Tournament();
     const mine = this.selectedTeam === m.currentTeam;
     el.className = 'match-notice' + (mine ? ' ok' : ' warn');
     el.innerHTML =
-      '<b>' + roundLabel(m.round) + '</b> &nbsp;·&nbsp; NOW SHOOTING: <b>' + cur.name.toUpperCase() +
+      '<b>' + roundLabel(m.round) + '</b> <span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span>' +
+      ' &nbsp;·&nbsp; NOW SHOOTING: <b>' + cur.name.toUpperCase() +
       '</b> &nbsp;·&nbsp; UP NEXT: ' + next.name.toUpperCase() +
+      (isRapid(m) ? ' &nbsp;·&nbsp; <b>60s — most goals wins</b>' : '') +
       (mine ? '' : '<br><b>Heads up:</b> you picked ' + teamById(this.selectedTeam).name.toUpperCase() +
         ', so your score counts on the leaderboard but not toward this match.');
   };
@@ -5807,7 +5932,8 @@ const TOURNEY = new Tournament();
     const ctx = $('insMatch');
     if (ctx) {
       ctx.textContent = m
-        ? roundLabel(m.round) + ' — ' + teamById(m.teamA).name.toUpperCase() + ' vs ' + teamById(m.teamB).name.toUpperCase()
+        ? roundLabel(m.round) + ' (' + (isRapid(m) ? '1-min rapid-fire' : '3 free kicks') + ') — ' +
+          teamById(m.teamA).name.toUpperCase() + ' vs ' + teamById(m.teamB).name.toUpperCase()
         : 'Practice mode — no live match';
     }
     this.showScreen('instructions');
@@ -6006,15 +6132,17 @@ const TOURNEY = new Tournament();
         const live = m.status === 'live';
         const winA = m.winner === m.teamA, winB = m.winner === m.teamB;
         return '<div class="bracket-match' + (live ? ' live' : '') + '">' +
-          '<div class="bm-round">' + (live ? 'LIVE — ' + teamById(m.currentTeam).name.toUpperCase() + ' SHOOTING' : 'FINAL SCORE') + '</div>' +
+          '<div class="bm-round">' +
+            (live ? 'LIVE — ' + teamById(m.currentTeam).name.toUpperCase() + ' SHOOTING' : 'FINAL — ' + (tot.rapid ? 'GOALS' : 'PTS')) +
+            ' <span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span></div>' +
           '<div class="bm-row' + (winA ? ' win' : '') + '">' +
             '<span class="chip" style="background:' + A.primary + '"></span>' +
             '<span class="bm-name">' + A.name.toUpperCase() + '</span>' +
-            '<span class="bm-score">' + tot.a + '</span></div>' +
+            '<span class="bm-score">' + tot.headA + '</span></div>' +
           '<div class="bm-row' + (winB ? ' win' : '') + '">' +
             '<span class="chip" style="background:' + B.primary + '"></span>' +
             '<span class="bm-name">' + B.name.toUpperCase() + '</span>' +
-            '<span class="bm-score">' + tot.b + '</span></div>' +
+            '<span class="bm-score">' + tot.headB + '</span></div>' +
         '</div>';
       }).join('') : '<div class="bracket-empty">No matches created yet</div>';
       return '<div class="bracket-round"><h4>' + rd.label + '</h4>' + cards + '</div>';
@@ -6144,17 +6272,22 @@ const TOURNEY = new Tournament();
     const tot = TOURNEY.matchTotals(m, rows);
     const cur = teamById(m.currentTeam);
     const nxt = teamById(m.currentTeam === m.teamA ? m.teamB : m.teamA);
+    const unit = tot.rapid ? ' goals' : ' pts';
     host.innerHTML =
-      '<div class="adm-live-head">' + roundLabel(m.round) + ' — LIVE</div>' +
+      '<div class="adm-live-head">' + roundLabel(m.round) +
+        ' <span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span> — LIVE</div>' +
       '<div class="adm-live-grid">' +
         '<div class="adm-live-team' + (m.currentTeam === m.teamA ? ' now' : '') + '">' +
           '<span class="chip" style="background:' + A.primary + '"></span>' + A.name.toUpperCase() +
-          '<b>' + tot.a + '</b><span class="pl">' + tot.playersA + ' player(s)</span></div>' +
+          '<b>' + tot.headA + '</b><span class="pl">' + tot.playersA + ' player(s)' +
+          (tot.rapid ? ' · ' + tot.a + ' pts' : '') + '</span></div>' +
         '<div class="adm-live-team' + (m.currentTeam === m.teamB ? ' now' : '') + '">' +
           '<span class="chip" style="background:' + B.primary + '"></span>' + B.name.toUpperCase() +
-          '<b>' + tot.b + '</b><span class="pl">' + tot.playersB + ' player(s)</span></div>' +
+          '<b>' + tot.headB + '</b><span class="pl">' + tot.playersB + ' player(s)' +
+          (tot.rapid ? ' · ' + tot.b + ' pts' : '') + '</span></div>' +
       '</div>' +
-      '<p class="small">Now shooting: <b>' + cur.name.toUpperCase() + '</b> · Up next: <b>' + nxt.name.toUpperCase() + '</b></p>' +
+      '<p class="small">Winner by <b>' + (tot.rapid ? 'goals' : 'points') + '</b> · Now shooting: <b>' +
+        cur.name.toUpperCase() + '</b> · Up next: <b>' + nxt.name.toUpperCase() + '</b></p>' +
       '<div class="row" style="justify-content:flex-start">' +
         '<button class="btn alt" id="admSwitch" type="button">HAND OVER TO ' + nxt.name.toUpperCase() + '</button>' +
         '<button class="btn danger" id="admClose" type="button">CLOSE MATCH</button>' +
@@ -6176,8 +6309,8 @@ const TOURNEY = new Tournament();
     const A = teamById(m.teamA), B = teamById(m.teamB);
     TOURNEY.closeMatch(m.id, tot);
     AUDIO.menuSelect();
-    this.admSay('Match closed — ' + A.name + ' ' + tot.a + ' : ' + tot.b + ' ' + B.name +
-      '. Now confirm who advances.', 'ok');
+    this.admSay('Match closed — ' + A.name + ' ' + tot.headA + ' : ' + tot.headB + ' ' + B.name +
+      ' (' + (tot.rapid ? 'goals' : 'points') + '). Now confirm who advances.', 'ok');
     this.refreshAdmin();
     this.syncMatchNotice();
   };
@@ -6205,12 +6338,14 @@ const TOURNEY = new Tournament();
       }
       actions += '<button class="btn danger tiny" data-del="' + m.id + '">DELETE</button>';
       return '<div class="adm-match' + (m.status === 'live' ? ' live' : '') + '">' +
-        '<div class="am-top"><b>' + roundLabel(m.round) + '</b> · ' +
+        '<div class="am-top"><b>' + roundLabel(m.round) + '</b> ' +
+          '<span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span> · ' +
           (m.status === 'live' ? '<span class="live-dot">LIVE</span>' : 'CLOSED') +
           (tie ? ' · <span class="tie">DRAW — pick who advances</span>' : '') +
           (decided ? ' · advances: <b>' + teamById(m.winner).name.toUpperCase() + '</b>' : '') +
         '</div>' +
-        '<div class="am-score">' + A.name.toUpperCase() + ' <b>' + tot.a + '</b> — <b>' + tot.b + '</b> ' + B.name.toUpperCase() + '</div>' +
+        '<div class="am-score">' + A.name.toUpperCase() + ' <b>' + tot.headA + '</b> — <b>' + tot.headB + '</b> ' +
+          B.name.toUpperCase() + ' <span class="am-unit">' + (tot.rapid ? 'goals' : 'pts') + '</span></div>' +
         '<div class="am-actions">' + actions + '</div>' +
       '</div>';
     }).join('');
@@ -6291,11 +6426,13 @@ const TOURNEY = new Tournament();
 
     click('btnAdmCreate', () => {
       const a = $('admTeamA').value, b = $('admTeamB').value, r = $('admRound').value;
+      const fmt = $('admFormat') ? $('admFormat').value : 'kicks';
       if (!a || !b) { this.admSay('Pick both teams first.', 'warn'); return; }
       try {
-        TOURNEY.createMatch(a, b, r);
+        TOURNEY.createMatch(a, b, r, fmt);
         AUDIO.menuSelect();
-        this.admSay(roundLabel(r) + ' started — ' + teamById(a).name + ' shoots first.', 'ok');
+        const fLabel = fmt === 'rapid' ? '1-min rapid-fire' : '3 free kicks';
+        this.admSay(roundLabel(r) + ' started (' + fLabel + ') — ' + teamById(a).name + ' shoots first.', 'ok');
         this.refreshAdmin();
         this.syncMatchNotice();
       } catch (err) { this.admSay(err.message, 'warn'); }
@@ -7090,9 +7227,12 @@ const SESSION = new RoomSession();
   G.finishShot = function (res) {
     origFinish.call(this, res);
     if (this.mode === 'room' && SESSION.active) {
+      /* the live total is this round's board score on top of anything banked
+         in previous rounds, so multi-round scores accumulate on screen */
+      const me = SESSION.currentPlayer || {};
       SESSION.updateProgress({
-        score: this.board.score,
-        goals: this.board.goals,
+        score: (me.total || 0) + this.board.score,
+        goals: (me.totalGoals || 0) + this.board.goals,
         attempts: this.board.attempt,
         left: this.board.kicksLeft,
         status: this.board.kicksLeft > 0 ? 'playing' : 'finished',
@@ -7134,7 +7274,7 @@ const SESSION = new RoomSession();
   G.draw = function (dt) {
     origDraw.call(this, dt);
     if (this.mode !== 'room' || !SESSION.active) return;
-    if (!IN_MATCH[this.state] && this.state !== S.FINAL_RESULTS) return;
+    if (!IN_MATCH[this.state] && this.state !== S.FINAL_RESULTS && this.state !== S.SPECTATE) return;
 
     const R = this.renderer;
     const cur = SESSION.currentPlayer;
@@ -7168,7 +7308,7 @@ const SESSION = new RoomSession();
     const host = $('specLabels');
     if (!host) return;
     const on = this.g.mode === 'room' && SESSION.active &&
-               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
+               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS || this.g.state === S.SPECTATE);
     if (!on) { host.innerHTML = ''; return; }
 
     const cur = SESSION.currentPlayer;
@@ -7197,7 +7337,7 @@ const SESSION = new RoomSession();
     /* stand down while the big result banner is on screen, or they collide */
     const on = this.g.mode === 'room' && SESSION.active && st && st.status === 'playing' &&
                this.g.state !== S.RESULT &&
-               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS);
+               (IN_MATCH[this.g.state] || this.g.state === S.FINAL_RESULTS || this.g.state === S.SPECTATE);
     el.classList.toggle('show', !!on);
     if (!on) return;
 
@@ -7343,6 +7483,2175 @@ const SESSION = new RoomSession();
       const lb = $('specLabels'); if (lb) lb.innerHTML = '';
       const tb = $('turnBanner'); if (tb) tb.classList.remove('show');
     }
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — PRIVATE TOURNAMENTS
+   tournament.js
+   --------------------------------------------------------------------------
+   A simple two-role flow for Team Match:
+
+     ORGANISER  creates a tournament (name, access code, teams, format,
+                max players per team), then creates matches — each with its
+                own room code — and watches a dashboard.
+     PLAYER     finds the tournament, enters the access code, picks their
+                match, enters the room code, types their name, picks one of
+                the two teams in that match, and joins.
+
+   Storage: reuses the existing `rooms` table (code TEXT primary key, state
+   JSONB), so no new SQL is needed. Tournaments are rows with
+   state.kind === 'tournament'; match rooms are rows with kind === 'match'
+   and are driven by the same RoomSession as Play With Friends.
+
+   PRIVACY, STATED HONESTLY: the browser talks to Supabase with a public anon
+   key and the table policies allow public read. The access code is stored as
+   a hash so the plain code is not sitting in the row, and codes gate every
+   screen — but a determined person with developer tools could still read
+   other rows. Treat tournaments as private-by-convention, not secret. Real
+   enforcement would need server-side auth.
+   ========================================================================== */
+'use strict';
+
+const TOURNEY_FORMATS = [
+  { id: 'friendly',     label: 'Friendly / Normal Match' },
+  { id: 'league',       label: 'League' },
+  { id: 'playoffs',     label: 'Playoffs' },
+  { id: 'quarterfinal', label: 'Quarterfinal' },
+  { id: 'semifinal',    label: 'Semifinal' },
+  { id: 'final',        label: 'Final' },
+];
+
+const formatLabel = (id) => {
+  const f = TOURNEY_FORMATS.find((x) => x.id === id);
+  return f ? f.label : (id || 'Match');
+};
+
+const TCFG = {
+  ID_LEN: 5,           // public tournament id (the row key)
+  ROOM_LEN: 6,         // per-match room code
+  CODE_MIN: 4,         // organiser's access code
+  CODE_MAX: 12,
+  MAX_PER_TEAM: 12,
+  ALPHABET: 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+};
+
+function randCode(n, alphabet) {
+  const a = alphabet || TCFG.ALPHABET;
+  let s = '';
+  for (let i = 0; i < n; i++) s += a[Math.floor(Math.random() * a.length)];
+  return s;
+}
+
+/** FNV-1a — obfuscation so the plain access code isn't stored in the row.
+    Not a security boundary: short codes are trivially brute-forced. */
+function hashCode(str) {
+  let h = 0x811c9dc5;
+  const s = String(str).trim().toUpperCase();
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h * 0x01000193) >>> 0;
+  }
+  return 'h' + h.toString(36);
+}
+
+/* ==========================================================================
+   STORE — tournaments and match rooms in the shared `rooms` table
+   ========================================================================== */
+
+class TournamentStore {
+  get online() { return BACKEND.online; }
+  get me() { return ROOMS.me; }
+
+  /* ---- local fallback so the flow works with no backend --------------- */
+
+  _localAll() {
+    try { return JSON.parse(localStorage.getItem('freekick_tournaments_v1')) || {}; }
+    catch (_) { return {}; }
+  }
+
+  _localWrite(all) {
+    try { localStorage.setItem('freekick_tournaments_v1', JSON.stringify(all)); } catch (_) {}
+  }
+
+  /* ---- remote --------------------------------------------------------- */
+
+  async _put(state) {
+    if (!this.online) {
+      const all = this._localAll();
+      all[state.id] = state;
+      this._localWrite(all);
+      return state;
+    }
+    await BACKEND._fetch('rooms?on_conflict=code', {
+      method: 'POST',
+      headers: BACKEND._headers({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({ code: state.id, state, updated_at: new Date().toISOString() }),
+    });
+    return state;
+  }
+
+  async get(id) {
+    if (!id) return null;
+    if (!this.online) return this._localAll()[String(id).toUpperCase()] || null;
+    const rows = await BACKEND._fetch(
+      'rooms?select=state&code=eq.' + encodeURIComponent(String(id).toUpperCase()) + '&limit=1',
+      { headers: BACKEND._headers() });
+    const st = (Array.isArray(rows) && rows[0]) ? rows[0].state : null;
+    return (st && st.kind === 'tournament') ? st : null;
+  }
+
+  /** every open tournament, newest first — names only, codes stay hashed */
+  async list() {
+    if (!this.online) {
+      return Object.values(this._localAll())
+        .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    }
+    const rows = await BACKEND._fetch(
+      'rooms?select=code,state,updated_at&state->>kind=eq.tournament&order=updated_at.desc&limit=60',
+      { headers: BACKEND._headers() });
+    return (Array.isArray(rows) ? rows : []).map((r) => r.state).filter(Boolean);
+  }
+
+  async save(state) {
+    state.updatedAt = new Date().toISOString();
+    return this._put(state);
+  }
+
+  /* ---- create --------------------------------------------------------- */
+
+  async create({ name, accessCode, teams, format, maxPerTeam }) {
+    name = String(name || '').trim();
+    if (name.length < 3) throw new Error('Give the tournament a name (at least 3 characters).');
+    const code = String(accessCode || '').trim().toUpperCase();
+    if (code.length < TCFG.CODE_MIN) {
+      throw new Error('Access code must be at least ' + TCFG.CODE_MIN + ' characters.');
+    }
+    if (code.length > TCFG.CODE_MAX) throw new Error('Access code is too long.');
+    if (!Array.isArray(teams) || teams.length < 2) throw new Error('Pick at least two teams.');
+    const cap = clamp(parseInt(maxPerTeam, 10) || 3, 1, TCFG.MAX_PER_TEAM);
+
+    /* a free row key */
+    let id = randCode(TCFG.ID_LEN);
+    for (let i = 0; i < 6; i++) {
+      const clash = await this.get(id).catch(() => null);
+      if (!clash) break;
+      id = randCode(TCFG.ID_LEN);
+    }
+
+    const state = {
+      kind: 'tournament',
+      id,
+      name,
+      codeHash: hashCode(code),
+      format: format || 'friendly',
+      teams: teams.slice(),
+      maxPerTeam: cap,
+      organiserId: this.me,
+      matches: [],
+      advanced: [],
+      champion: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await this._put(state);
+    return state;
+  }
+
+  checkCode(state, entered) {
+    return !!state && state.codeHash === hashCode(entered);
+  }
+
+  isOrganiser(state) { return !!state && state.organiserId === this.me; }
+
+  /* ---- matches -------------------------------------------------------- */
+
+  /**
+   * Creates a match inside a tournament and its own room row, so players can
+   * join with the room code alone once they are past the tournament gate.
+   */
+  async createMatch(state, { teamA, teamB, stage, maxPerTeam, rounds }) {
+    if (!teamA || !teamB) throw new Error('Pick both teams.');
+    if (teamA === teamB) throw new Error('A team cannot play itself.');
+    const cap = clamp(parseInt(maxPerTeam, 10) || state.maxPerTeam || 3, 1, TCFG.MAX_PER_TEAM);
+    const rN = clamp(parseInt(rounds, 10) || 1, 1, 10);
+
+    let roomCode = randCode(TCFG.ROOM_LEN);
+    for (let i = 0; i < 6; i++) {
+      const clash = await ROOMS.fetch(roomCode).catch(() => null);
+      if (!clash) break;
+      roomCode = randCode(TCFG.ROOM_LEN);
+    }
+
+    const match = {
+      id: 'mt' + Date.now() + randCode(3),
+      roomCode,
+      teamA, teamB,
+      stage: stage || state.format || 'friendly',
+      maxPerTeam: cap,
+      rounds: rN,
+      status: 'upcoming',        // upcoming | live | done
+      winner: null,
+      totals: null,
+      createdAt: new Date().toISOString(),
+    };
+    state.matches.push(match);
+    await this.save(state);
+
+    /* the playable room, pre-seeded with both teams */
+    const room = {
+      kind: 'match',
+      code: roomCode,
+      status: 'lobby',
+      turn: 0,
+      players: [],
+      seq: 0,
+      host: state.organiserId,
+      tournamentId: state.id,
+      tournamentName: state.name,
+      matchId: match.id,
+      teamA, teamB,
+      maxPerTeam: cap,
+      stage: match.stage,
+      rounds: rN,
+      round: 1,
+      bonus: {},
+      createdAt: new Date().toISOString(),
+    };
+    await ROOMS.save(room);
+    return match;
+  }
+
+  matchById(state, id) { return (state.matches || []).find((m) => m.id === id) || null; }
+
+  /** pull every match room so the dashboard can show live scores */
+  async fetchMatchRooms(state) {
+    const out = {};
+    for (const m of (state.matches || [])) {
+      try {
+        const r = await ROOMS.fetch(m.roomCode);
+        if (r) out[m.id] = r;
+      } catch (_) { /* keep going; one bad row shouldn't blank the board */ }
+    }
+    return out;
+  }
+
+  /** team totals for one match room */
+  static totalsFor(room) {
+    const t = { a: 0, b: 0, aGoals: 0, bGoals: 0, aPlayers: 0, bPlayers: 0 };
+    if (!room) return t;
+    (room.players || []).forEach((p) => {
+      if (p.teamId === room.teamA) { t.a += p.score || 0; t.aGoals += p.goals || 0; t.aPlayers++; }
+      else if (p.teamId === room.teamB) { t.b += p.score || 0; t.bGoals += p.goals || 0; t.bPlayers++; }
+    });
+    return t;
+  }
+
+  async setMatchStatus(state, matchId, status) {
+    const m = this.matchById(state, matchId);
+    if (!m) return null;
+    m.status = status;
+    await this.save(state);
+    return m;
+  }
+
+  async closeMatch(state, matchId, totals) {
+    const m = this.matchById(state, matchId);
+    if (!m) return null;
+    m.status = 'done';
+    m.totals = totals;
+    m.closedAt = new Date().toISOString();
+    if (!m.winner) {
+      if (totals.a !== totals.b) m.winner = totals.a > totals.b ? m.teamA : m.teamB;
+      else if (totals.aGoals !== totals.bGoals) m.winner = totals.aGoals > totals.bGoals ? m.teamA : m.teamB;
+    }
+    await this.save(state);
+    return m;
+  }
+
+  async advance(state, matchId, teamId) {
+    const m = this.matchById(state, matchId);
+    if (!m) return null;
+    m.winner = teamId;
+    if (!Array.isArray(state.advanced)) state.advanced = [];
+    if (state.advanced.indexOf(teamId) < 0) state.advanced.push(teamId);
+    if (m.stage === 'final') state.champion = teamId;
+    await this.save(state);
+    return m;
+  }
+
+  async deleteMatch(state, matchId) {
+    const i = (state.matches || []).findIndex((m) => m.id === matchId);
+    if (i < 0) return false;
+    state.matches.splice(i, 1);
+    await this.save(state);
+    return true;
+  }
+}
+
+const TSTORE = new TournamentStore();
+
+/* ==========================================================================
+   ROOM SESSION — joining a tournament match room
+   ========================================================================== */
+
+(function extendSessionForMatches() {
+  const S2 = RoomSession.prototype;
+
+  /** true when the current room belongs to a tournament match */
+  Object.defineProperty(S2, 'isMatchRoom', {
+    get() { return !!(this.state && this.state.kind === 'match'); },
+  });
+
+  Object.defineProperty(S2, 'teamIds', {
+    get() {
+      if (!this.isMatchRoom) return null;
+      return [this.state.teamA, this.state.teamB];
+    },
+  });
+
+  /** how many have already taken a seat for a given team */
+  S2.teamCount = function (teamId) {
+    return this.players.filter((p) => p.teamId === teamId).length;
+  };
+
+  /**
+   * Join a tournament match: the team must be one of the two playing, and the
+   * organiser's per-team cap is enforced.
+   */
+  S2.joinMatch = async function (roomCode, name, teamId) {
+    const code = String(roomCode || '').trim().toUpperCase();
+    if (!code) throw new Error('Enter the match room code.');
+    if (!String(name || '').trim()) throw new Error('Enter your name.');
+
+    const st = await ROOMS.fetch(code);
+    if (!st) throw new Error('No match room called "' + code + '". Check the code with your organiser.');
+    if (st.kind !== 'match') throw new Error('That code is not a match room.');
+    if (st.status === 'done') throw new Error('That match has already finished.');
+    if (teamId !== st.teamA && teamId !== st.teamB) {
+      throw new Error('Pick one of the two teams playing this match.');
+    }
+
+    const already = ROOMS.online ? (st.players || []).find((p) => p.id === ROOMS.me) : null;
+    if (already) {
+      already.name = name;                       // rejoining after a refresh
+      already.teamId = teamId;
+    } else {
+      const cap = st.maxPerTeam || 3;
+      const taken = (st.players || []).filter((p) => p.teamId === teamId).length;
+      if (taken >= cap) {
+        throw new Error(teamById(teamId).name + ' is full (' + cap + ' player' + (cap === 1 ? '' : 's') + ').');
+      }
+      if (st.status === 'playing') throw new Error('That match has already kicked off.');
+      st.seq = (st.seq || (st.players || []).length) + 1;
+      const id = ROOMS.online ? ROOMS.me : ROOMS.me + '_s' + st.seq;
+      st.players = st.players || [];
+      st.players.push({
+        id, name: String(name).trim().slice(0, 24).toUpperCase(), teamId,
+        score: 0, goals: 0, timeMs: 0, attempts: 0, left: CFG.ATTEMPTS,
+        status: 'waiting', done: false, kicks: [],
+      });
+    }
+    await ROOMS.save(st);
+    this._adopt(st);
+    return st;
+  };
+
+  /** team totals for the live scoreboard */
+  S2.matchTotals = function () {
+    return TournamentStore.totalsFor(this.state);
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — TOURNAMENT UI
+   tournament-ui.js
+   --------------------------------------------------------------------------
+   Team Match, in plain steps:
+
+     ROLE  →  ORGANISER: create tournament → dashboard → create matches
+           →  PLAYER:    pick tournament → access code → pick match →
+                         room code → name → team → join the live room
+
+   One decision per screen, and nothing shown that the person can't act on.
+   ========================================================================== */
+'use strict';
+
+(function tournamentUI() {
+  const U = UI.prototype;
+
+  /* anyone already in a match room may start it, so a missing organiser can
+     never deadlock a match at an event */
+  Object.defineProperty(RoomSession.prototype, 'isHost', {
+    configurable: true,
+    get() {
+      if (!this.state) return false;
+      if (this.state.kind === 'match') return true;
+      return this.hotSeat || this.state.host === this.me;
+    },
+  });
+
+  /* ==========================================================================
+     1. ROLE PICKER
+     ========================================================================== */
+
+  U.openTeamRole = function () {
+    AUDIO.onUserGesture();
+    AUDIO.menuSelect();
+    this.showScreen('teamrole');
+    this.g.setState(S.HIGH_SCORES);
+  };
+
+  /* ==========================================================================
+     2. ORGANISER — create a tournament
+     ========================================================================== */
+
+  U.openOrgCreate = function () {
+    AUDIO.menuSelect();
+    this.showScreen('orgcreate');
+    this.buildOrgTeamGrid();
+    const fmt = $('orgFormat');
+    if (fmt && !fmt.options.length) {
+      fmt.innerHTML = TOURNEY_FORMATS.map((f) =>
+        '<option value="' + f.id + '">' + f.label + '</option>').join('');
+    }
+    const code = $('orgCode');
+    if (code && !code.value) code.value = randCode(5);
+    this.orgSay('');
+    setTimeout(() => { const n = $('orgName'); if (n) n.focus(); }, 60);
+  };
+
+  U.buildOrgTeamGrid = function () {
+    const host = $('orgTeamGrid');
+    if (!host || host.dataset.built) return;
+    host.dataset.built = '1';
+    host.innerHTML = TEAMS.map((t) =>
+      '<div class="team-card">' +
+        '<input type="checkbox" name="orgTeam" id="oteam_' + t.id + '" value="' + t.id + '">' +
+        '<label class="team-face" for="oteam_' + t.id + '">' +
+          '<span class="flag" aria-hidden="true">' + t.flag + '</span>' +
+          '<span class="tname">' + t.name.toUpperCase() + '</span>' +
+          '<span class="swatch" aria-hidden="true">' +
+            '<i style="background:' + t.primary + '"></i>' +
+            '<i style="background:' + t.secondary + '"></i>' +
+            '<i style="background:' + t.accent + '"></i>' +
+          '</span>' +
+        '</label>' +
+      '</div>').join('');
+    $$('input[name="orgTeam"]', host).forEach((c) => {
+      c.addEventListener('change', () => { AUDIO.menuMove(); this.syncOrgCount(); });
+    });
+    this.syncOrgCount();
+  };
+
+  U.orgTeams = function () {
+    return $$('input[name="orgTeam"]:checked').map((c) => c.value);
+  };
+
+  U.syncOrgCount = function () {
+    const el = $('orgTeamCount');
+    if (el) {
+      const n = this.orgTeams().length;
+      el.textContent = n + ' team' + (n === 1 ? '' : 's') + ' selected' + (n < 2 ? ' — pick at least 2' : '');
+      el.className = 'small ' + (n < 2 ? 'muted' : 'ok-text');
+    }
+  };
+
+  U.orgSay = function (text, kind) {
+    const el = $('orgMsg');
+    if (el) { el.textContent = text || ''; el.className = 'adm-msg' + (kind ? ' ' + kind : ''); }
+  };
+
+  U.doCreateTournament = function () {
+    const name = $('orgName').value;
+    const code = $('orgCode').value;
+    const format = $('orgFormat').value;
+    const cap = $('orgMaxPerTeam').value;
+    const teams = this.orgTeams();
+    this.orgSay('Creating…');
+    TSTORE.create({ name, accessCode: code, teams, format, maxPerTeam: cap })
+      .then((state) => {
+        this.tstate = state;
+        this.enteredCode = String(code).trim().toUpperCase();
+        AUDIO.menuSelect();
+        this.openDash(state);
+      })
+      .catch((err) => { AUDIO.error(); this.orgSay(err.message, 'warn'); });
+  };
+
+  /* ==========================================================================
+     3. ORGANISER — dashboard
+     ========================================================================== */
+
+  U.openDash = function (state) {
+    this.tstate = state || this.tstate;
+    if (!this.tstate) { this.openTeamRole(); return; }
+    this.showScreen('tdash');
+    this.g.setState(S.HIGH_SCORES);
+    this.buildDashPickers();
+    this.refreshDash();
+    if (this.dashTimer) clearInterval(this.dashTimer);
+    /* live-ish dashboard: re-read the rooms every 2s while it's on screen */
+    this.dashTimer = setInterval(() => {
+      if (!$('screen-tdash').classList.contains('active')) { clearInterval(this.dashTimer); this.dashTimer = null; return; }
+      this.refreshDash(true);
+    }, 2000);
+  };
+
+  U.buildDashPickers = function () {
+    const st = this.tstate;
+    const a = $('dashTeamA'), b = $('dashTeamB'), stg = $('dashStage'), cap = $('dashCap');
+    const opts = '<option value="">— team —</option>' + st.teams.map((id) => {
+      const t = teamById(id);
+      return '<option value="' + id + '">' + t.flag + ' ' + t.name + '</option>';
+    }).join('');
+    if (a) a.innerHTML = opts;
+    if (b) b.innerHTML = opts;
+    if (stg) {
+      stg.innerHTML = TOURNEY_FORMATS.map((f) =>
+        '<option value="' + f.id + '"' + (f.id === st.format ? ' selected' : '') + '>' + f.label + '</option>').join('');
+    }
+    if (cap && !cap.value) cap.value = st.maxPerTeam;
+  };
+
+  U.dashSay = function (text, kind) {
+    const el = $('dashMsg');
+    if (el) { el.textContent = text || ''; el.className = 'adm-msg' + (kind ? ' ' + kind : ''); }
+  };
+
+  U.refreshDash = function (quiet) {
+    const st = this.tstate;
+    if (!st) return;
+    const head = $('dashHead');
+    if (head) {
+      head.innerHTML =
+        '<div class="dash-name">' + escapeHtml(st.name) + '</div>' +
+        '<div class="dash-meta">' +
+          '<span class="fmt-badge kicks">' + formatLabel(st.format) + '</span>' +
+          '<span>TOURNAMENT ID ' + this.codeWithCopy(st.id, 'tournament ID') + '</span>' +
+          '<span>ACCESS CODE ' + (this.enteredCode
+            ? this.codeWithCopy(this.enteredCode, 'access code')
+            : '<b class="code-out">••••</b>') + '</span>' +
+          '<span>' + st.teams.length + ' teams · max ' + st.maxPerTeam + '/team</span>' +
+        '</div>' +
+        (st.champion
+          ? '<div class="champ-banner">🏆 WINNER: ' + teamById(st.champion).flag + ' ' + teamById(st.champion).name.toUpperCase() + '</div>'
+          : '');
+    }
+
+    TSTORE.fetchMatchRooms(st).then((rooms) => {
+      this.dashRooms = rooms;
+      this.renderDashMatches(rooms);
+    }).catch(() => { if (!quiet) this.dashSay('Could not refresh match scores.', 'warn'); });
+  };
+
+  U.renderDashMatches = function (rooms) {
+    const host = $('dashMatches');
+    const st = this.tstate;
+    if (!host || !st) return;
+    if (!st.matches.length) {
+      host.innerHTML = '<p class="small muted">No matches yet. Create the first one above — you can add more as the tournament goes on.</p>';
+      return;
+    }
+
+    host.innerHTML = st.matches.slice().reverse().map((m) => {
+      const A = teamById(m.teamA), B = teamById(m.teamB);
+      const room = rooms[m.id];
+      const tot = TournamentStore.totalsFor(room);
+      const live = room && room.status === 'playing';
+      const done = m.status === 'done' || (room && room.status === 'done');
+      const joined = room ? (room.players || []).length : 0;
+      const statusTxt = done ? 'FINISHED' : live ? 'LIVE' : 'WAITING FOR PLAYERS';
+      const winA = m.winner === m.teamA, winB = m.winner === m.teamB;
+
+      const board = room && joined
+        ? '<ol class="dash-lb">' + (room.players || []).slice()
+            .sort((p, q) => (q.score - p.score) || (q.goals - p.goals))
+            .map((p) => {
+              const t = teamById(p.teamId);
+              const stt = (p.done || p.status === 'finished') ? 'FINISHED'
+                : (room.players[room.turn] && room.players[room.turn].id === p.id && live) ? 'PLAYING NOW'
+                : 'WAITING';
+              return '<li><span class="rb-chip" style="background:' + t.primary + '"></span>' +
+                escapeHtml(p.name) + ' <em>' + t.name.toUpperCase() + '</em>' +
+                '<b>' + (p.score || 0) + '</b>' +
+                '<span class="rf-g">' + (p.goals || 0) + 'G · ' + (p.attempts || 0) + '/3</span>' +
+                '<span class="dash-st ' + stt.toLowerCase().replace(/ /g, '-') + '">' + stt + '</span></li>';
+            }).join('') + '</ol>'
+        : '<p class="small muted">Nobody has joined yet.</p>';
+
+      let actions = '';
+      if (!done) {
+        actions += '<button class="btn alt tiny" data-start="' + m.id + '">START MATCH</button>' +
+                   '<button class="btn danger tiny" data-close="' + m.id + '">CLOSE MATCH</button>';
+      }
+      if (done || m.winner) {
+        actions += '<button class="btn alt tiny" data-adv="' + m.id + '" data-team="' + m.teamA + '">' +
+                     (winA ? '✔ ' : '') + A.name.toUpperCase() + ' ADVANCES</button>' +
+                   '<button class="btn alt tiny" data-adv="' + m.id + '" data-team="' + m.teamB + '">' +
+                     (winB ? '✔ ' : '') + B.name.toUpperCase() + ' ADVANCES</button>';
+      }
+      actions += '<button class="btn danger tiny" data-del="' + m.id + '">DELETE</button>';
+
+      return '<div class="dash-match' + (live ? ' live' : '') + (done ? ' done' : '') + '">' +
+        '<div class="dm-top">' +
+          '<b>' + formatLabel(m.stage) + '</b>' +
+          '<span class="dm-status ' + statusTxt.toLowerCase().replace(/ /g, '-') + '">' + statusTxt + '</span>' +
+          '<span class="dm-room">ROOM ' + this.codeWithCopy(m.roomCode, 'room code') + '</span>' +
+          '<span class="small muted">' + joined + '/' + (m.maxPerTeam * 2) + ' players · max ' + m.maxPerTeam + '/team</span>' +
+        '</div>' +
+        '<div class="dm-score">' +
+          '<span class="' + (winA ? 'win' : '') + '"><span class="rb-chip" style="background:' + A.primary + '"></span>' +
+            A.name.toUpperCase() + ' <b>' + tot.a + '</b> <em>' + tot.aGoals + 'G · ' + tot.aPlayers + 'p</em></span>' +
+          '<span class="dm-vs">vs</span>' +
+          '<span class="' + (winB ? 'win' : '') + '"><span class="rb-chip" style="background:' + B.primary + '"></span>' +
+            B.name.toUpperCase() + ' <b>' + tot.b + '</b> <em>' + tot.bGoals + 'G · ' + tot.bPlayers + 'p</em></span>' +
+        '</div>' +
+        (m.winner ? '<p class="small">Advancing: <b>' + teamById(m.winner).name.toUpperCase() + '</b></p>' : '') +
+        board +
+        '<div class="am-actions">' + actions + '</div>' +
+      '</div>';
+    }).join('');
+
+    /* wire the row actions */
+    const st2 = st;
+    $$('[data-start]', host).forEach((b) => {
+      b.onclick = async () => {
+        const m = TSTORE.matchById(st2, b.dataset.start);
+        const room = (this.dashRooms || {})[m.id];
+        if (!room || !(room.players || []).length) { this.dashSay('Nobody has joined that room yet.', 'warn'); return; }
+        room.status = 'playing';
+        room.turn = 0;
+        await ROOMS.save(room);
+        await TSTORE.setMatchStatus(st2, m.id, 'live');
+        AUDIO.menuSelect();
+        this.dashSay('Match started — players can shoot now.', 'ok');
+        this.refreshDash(true);
+      };
+    });
+    $$('[data-close]', host).forEach((b) => {
+      b.onclick = () => this.armConfirm(b, 'CLOSE MATCH', async () => {
+        const m = TSTORE.matchById(st2, b.dataset.close);
+        const room = (this.dashRooms || {})[m.id];
+        const tot = TournamentStore.totalsFor(room);
+        if (room) { room.status = 'done'; await ROOMS.save(room); }
+        await TSTORE.closeMatch(st2, m.id, tot);
+        AUDIO.menuSelect();
+        this.dashSay('Match closed. Now confirm who advances.', 'ok');
+        this.refreshDash(true);
+      });
+    });
+    $$('[data-adv]', host).forEach((b) => {
+      b.onclick = async () => {
+        await TSTORE.advance(st2, b.dataset.adv, b.dataset.team);
+        AUDIO.menuSelect();
+        this.dashSay(teamById(b.dataset.team).name + ' advances.', 'ok');
+        this.refreshDash(true);
+      };
+    });
+    $$('[data-del]', host).forEach((b) => {
+      b.onclick = () => this.armConfirm(b, 'DELETE', async () => {
+        await TSTORE.deleteMatch(st2, b.dataset.del);
+        this.dashSay('Match deleted.', 'ok');
+        this.refreshDash(true);
+      });
+    });
+  };
+
+  U.doCreateMatch = function () {
+    const st = this.tstate;
+    const a = $('dashTeamA').value, b = $('dashTeamB').value;
+    const stage = $('dashStage').value, cap = $('dashCap').value;
+    const rounds = 1;   // team matches are a single round by design
+    TSTORE.createMatch(st, { teamA: a, teamB: b, stage, maxPerTeam: cap, rounds })
+      .then((m) => {
+        AUDIO.menuSelect();
+        const A = teamById(m.teamA), B = teamById(m.teamB);
+        /* clear confirmation, so the organiser knows it saved and can add another */
+        this.popup('Match Created', [
+          '<p><b>' + A.flag + ' ' + escapeHtml(A.name.toUpperCase()) + ' vs ' +
+            B.flag + ' ' + escapeHtml(B.name.toUpperCase()) + '</b></p>',
+          '<p class="small muted">' + formatLabel(m.stage) + ' · max ' + m.maxPerTeam + ' players per team</p>',
+          '<p>Match room code:</p>',
+          '<p class="popup-code">' + this.codeWithCopy(m.roomCode, 'room code') + '</p>',
+          '<p class="small muted">Share the tournament access code <b>' +
+            escapeHtml(this.enteredCode || '') + '</b> and this room code with those players.</p>',
+        ], { icon: '⚽', ok: 'CREATE ANOTHER' });
+        this.resetMatchForm();
+        this.dashSay('Match created — room code ' + m.roomCode + '.', 'ok');
+        this.refreshDash(true);
+      })
+      .catch((err) => { AUDIO.error(); this.dashSay(err.message, 'warn'); });
+  };
+
+  /** blank the create-match fields so the next match starts clean */
+  U.resetMatchForm = function () {
+    const a = $('dashTeamA'), b = $('dashTeamB'), stg = $('dashStage'), cap = $('dashCap');
+    if (a) a.value = '';
+    if (b) b.value = '';
+    if (stg && this.tstate) stg.value = this.tstate.format;
+    if (cap && this.tstate) cap.value = this.tstate.maxPerTeam;
+    if (a) a.focus();
+  };
+
+  /* ==========================================================================
+     4. PLAYER — find a tournament, then a match
+     ========================================================================== */
+
+  U.openPlayerBrowse = function () {
+    AUDIO.menuSelect();
+    this.showScreen('tjoin');
+    this.showJoinStep(1);
+    this.loadTournamentList();
+  };
+
+  U.showJoinStep = function (n) {
+    [1, 2].forEach((i) => {
+      const el = $('joinStep' + i);
+      if (el) el.style.display = (i === n) ? '' : 'none';
+    });
+    this.joinSay('');
+  };
+
+  U.joinSay = function (text, kind) {
+    const el = $('joinMsg');
+    if (el) { el.textContent = text || ''; el.className = 'adm-msg' + (kind ? ' ' + kind : ''); }
+  };
+
+  U.loadTournamentList = function () {
+    const host = $('joinList');
+    if (host) host.innerHTML = '<p class="small muted">Loading tournaments…</p>';
+    TSTORE.list().then((list) => {
+      this.tlist = list;
+      if (!host) return;
+      if (!list.length) {
+        host.innerHTML = '<p class="small muted">No tournaments yet. Ask your organiser to create one.</p>';
+        return;
+      }
+      host.innerHTML = list.map((t) =>
+        '<button class="join-tile" type="button" data-tid="' + t.id + '">' +
+          '<span class="jt-name">' + escapeHtml(t.name) + '</span>' +
+          '<span class="jt-meta">' + formatLabel(t.format) + ' · ' + t.teams.length + ' teams · ' +
+            (t.matches || []).length + ' match(es)</span>' +
+          '<span class="jt-id">ID ' + t.id + '</span>' +
+        '</button>').join('');
+      $$('[data-tid]', host).forEach((b) => {
+        b.onclick = () => this.pickTournament(b.dataset.tid);
+      });
+    }).catch(() => {
+      if (host) host.innerHTML = '<p class="small muted">Could not load tournaments. Check your connection.</p>';
+    });
+  };
+
+  U.pickTournament = function (id) {
+    const t = (this.tlist || []).find((x) => x.id === id);
+    if (!t) return;
+    this.pendingT = t;
+    AUDIO.menuMove();
+    const label = $('joinPickedName');
+    if (label) label.textContent = t.name;
+    const gate = $('joinAccess');
+    if (gate) gate.value = '';
+    this.joinSay('Enter the access code your organiser gave you.');
+    const wrap = $('joinGate');
+    if (wrap) wrap.style.display = '';
+    setTimeout(() => { if (gate) gate.focus(); }, 60);
+  };
+
+  U.submitAccessCode = function () {
+    const t = this.pendingT;
+    if (!t) { this.joinSay('Pick a tournament first.', 'warn'); return; }
+    const entered = $('joinAccess').value;
+    if (!TSTORE.checkCode(t, entered)) {
+      AUDIO.error();
+      this.joinSay('That access code does not match. Check with your organiser.', 'warn');
+      return;
+    }
+    AUDIO.menuSelect();
+    this.tstate = t;
+    this.enteredCode = String(entered).trim().toUpperCase();
+    this.showJoinStep(2);
+    this.renderMatchPicker();
+  };
+
+  U.renderMatchPicker = function () {
+    const st = this.tstate;
+    const host = $('joinMatches');
+    const head = $('joinTName');
+    if (head && st) head.textContent = st.name + ' — ' + formatLabel(st.format);
+    if (!host || !st) return;
+    const open = (st.matches || []).filter((m) => m.status !== 'done');
+    if (!open.length) {
+      host.innerHTML = '<p class="small muted">No matches are open in this tournament yet. Ask your organiser to create one.</p>';
+      return;
+    }
+    host.innerHTML = open.map((m) => {
+      const A = teamById(m.teamA), B = teamById(m.teamB);
+      return '<button class="join-tile" type="button" data-mid="' + m.id + '">' +
+        '<span class="jt-name">' + A.flag + ' ' + A.name.toUpperCase() + ' vs ' + B.flag + ' ' + B.name.toUpperCase() + '</span>' +
+        '<span class="jt-meta">' + formatLabel(m.stage) + ' · max ' + m.maxPerTeam + ' per team</span>' +
+      '</button>';
+    }).join('');
+    $$('[data-mid]', host).forEach((b) => {
+      b.onclick = () => this.pickMatch(b.dataset.mid);
+    });
+  };
+
+  U.pickMatch = function (mid) {
+    const st = this.tstate;
+    const m = TSTORE.matchById(st, mid);
+    if (!m) return;
+    this.pendingM = m;
+    AUDIO.menuMove();
+    const A = teamById(m.teamA), B = teamById(m.teamB);
+    const box = $('joinMatchForm');
+    if (box) box.style.display = '';
+    const title = $('joinMatchTitle');
+    if (title) title.textContent = A.name.toUpperCase() + ' vs ' + B.name.toUpperCase();
+    /* only the two teams in this match are offered */
+    const grid = $('joinTeamPick');
+    if (grid) {
+      grid.innerHTML = [A, B].map((t, i) =>
+        '<div class="team-card">' +
+          '<input type="radio" name="joinTeam" id="jteam_' + t.id + '" value="' + t.id + '"' + (i === 0 ? ' checked' : '') + '>' +
+          '<label class="team-face" for="jteam_' + t.id + '">' +
+            '<span class="flag" aria-hidden="true">' + t.flag + '</span>' +
+            '<span class="tname">' + t.name.toUpperCase() + '</span>' +
+            '<span class="swatch" aria-hidden="true">' +
+              '<i style="background:' + t.primary + '"></i>' +
+              '<i style="background:' + t.secondary + '"></i>' +
+              '<i style="background:' + t.accent + '"></i>' +
+            '</span>' +
+          '</label>' +
+        '</div>').join('');
+      $$('input[name="joinTeam"]', grid).forEach((r) =>
+        r.addEventListener('change', () => AUDIO.menuMove()));
+    }
+    const rc = $('joinRoomCode');
+    if (rc) rc.value = '';
+    this.joinSay('Enter the room code for this match, your name, and your team.');
+    setTimeout(() => { if (rc) rc.focus(); }, 60);
+  };
+
+  U.doJoinMatch = function () {
+    const m = this.pendingM;
+    if (!m) { this.joinSay('Pick a match first.', 'warn'); return; }
+    const code = $('joinRoomCode').value;
+    const name = $('joinPlayerName').value;
+    const picked = document.querySelector('input[name="joinTeam"]:checked');
+    const teamId = picked ? picked.value : null;
+    if (!teamId) { this.joinSay('Pick your team.', 'warn'); return; }
+    this.joinSay('Joining…');
+    SESSION.joinMatch(code, name, teamId)
+      .then(() => {
+        AUDIO.menuSelect();
+        Prefs.merge({ name: String(name).trim().toUpperCase() });
+        this.setMode('room');
+        this.showRoom();
+      })
+      .catch((err) => { AUDIO.error(); this.joinSay(err.message, 'warn'); });
+  };
+
+  /* ==========================================================================
+     5. WIRING
+     ========================================================================== */
+
+  const origBind = U.bindButtons;
+  U.bindButtons = function () {
+    origBind.call(this);
+    const click = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
+    const onEnter = (id, fn) => {
+      const el = $(id);
+      if (el) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); fn(); } });
+    };
+
+    /* Team Match now goes to the role picker */
+    const tm = $('btnPlayTeam');
+    if (tm) {
+      const fresh = tm.cloneNode(true);      // drop the old bracket handler
+      tm.parentNode.replaceChild(fresh, tm);
+      fresh.addEventListener('click', () => this.openTeamRole());
+    }
+
+    click('btnRoleOrganiser', () => this.openOrgCreate());
+    click('btnRolePlayer', () => this.openPlayerBrowse());
+    click('btnRoleBack', () => { AUDIO.menuSelect(); this.showScreen('welcome'); this.g.setState(S.WELCOME); });
+
+    click('btnOrgCreate', () => this.doCreateTournament());
+    click('btnOrgBack', () => { AUDIO.menuSelect(); this.openTeamRole(); });
+    click('btnOrgGenCode', () => { $('orgCode').value = randCode(5); AUDIO.menuMove(); });
+    onEnter('orgName', () => this.doCreateTournament());
+
+    click('btnDashCreateMatch', () => this.doCreateMatch());
+    click('btnDashBack', () => {
+      AUDIO.menuSelect();
+      if (this.dashTimer) { clearInterval(this.dashTimer); this.dashTimer = null; }
+      this.showScreen('welcome');
+      this.g.setState(S.WELCOME);
+    });
+    click('btnDashRefresh', () => { AUDIO.menuMove(); this.refreshDash(); });
+
+    click('btnJoinAccess', () => this.submitAccessCode());
+    onEnter('joinAccess', () => this.submitAccessCode());
+    click('btnJoinBack', () => { AUDIO.menuSelect(); this.openTeamRole(); });
+    click('btnJoinStepBack', () => { AUDIO.menuSelect(); this.showJoinStep(1); });
+    click('btnJoinMatch', () => this.doJoinMatch());
+    onEnter('joinRoomCode', () => this.doJoinMatch());
+    onEnter('joinPlayerName', () => this.doJoinMatch());
+    click('btnJoinRefreshList', () => { AUDIO.menuMove(); this.loadTournamentList(); });
+
+    /* organiser can reopen their dashboard from the role screen */
+    click('btnRoleMyDash', () => {
+      if (this.tstate) this.openDash(this.tstate);
+      else this.showScreen('orgcreate');
+    });
+  };
+
+  const origHydrate2 = U.hydrate;
+  U.hydrate = function (prefs) {
+    this.screens.teamrole = $('screen-teamrole');
+    this.screens.orgcreate = $('screen-orgcreate');
+    this.screens.tdash = $('screen-tdash');
+    this.screens.tjoin = $('screen-tjoin');
+    origHydrate2.call(this, prefs);
+    if (prefs && prefs.name) {
+      const pn = $('joinPlayerName');
+      if (pn) pn.value = prefs.name;
+    }
+  };
+})();
+
+/* ==========================================================================
+   HOME LEADERBOARD + TEAM TOTALS
+   Appended: the universal board on the home screen, team totals inside a
+   tournament match room, and the private-scores note on the instructions.
+   ========================================================================== */
+
+(function homeAndTeams() {
+  const U = UI.prototype;
+
+  /* ---- universal leaderboard on the home screen ---------------------- */
+
+  const prevRefresh = U.refreshLeaderboard;
+  U.refreshLeaderboard = function () {
+    const out = prevRefresh.call(this);
+    if (out && out.then) out.then((rows) => this.renderHomeBoard(rows));
+    return out;
+  };
+
+  U.renderHomeBoard = function (rows) {
+    const host = $('homeBoard');
+    if (!host) return;
+    const list = (rows || []).slice(0, 10);
+    if (!list.length) {
+      host.innerHTML = '<li class="hb-empty">No scores yet — play a solo challenge to open the board.</li>';
+      return;
+    }
+    host.innerHTML = list.map((r, i) => {
+      const t = teamById(r.team_id);
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+      return '<li><span class="hb-rank">' + medal + '</span>' +
+        '<span class="rb-chip" style="background:' + t.primary + '"></span>' +
+        '<span class="hb-name">' + escapeHtml(r.player_name) + '</span>' +
+        '<span class="hb-team">' + escapeHtml(r.team_name || t.name).toUpperCase() + '</span>' +
+        '<b class="hb-score">' + (r.score || 0) + '</b>' +
+        '<span class="hb-goals">' + (r.goals || 0) + 'G</span></li>';
+    }).join('');
+  };
+
+  /* ---- team totals header inside a tournament match room ------------- */
+
+  const prevBoard = U.renderRoomScoreboard;
+  U.renderRoomScoreboard = function () {
+    prevBoard.call(this);
+    const panel = $('roomBoard');
+    if (!panel || !panel.classList.contains('show')) return;
+    if (!SESSION.isMatchRoom) return;
+    const st = SESSION.state;
+    const A = teamById(st.teamA), B = teamById(st.teamB);
+    const tot = SESSION.matchTotals();
+    const head = document.createElement('div');
+    head.className = 'rb-teams';
+    head.innerHTML =
+      '<span class="' + (tot.a >= tot.b ? 'lead' : '') + '">' +
+        '<span class="rb-chip" style="background:' + A.primary + '"></span>' + A.name.toUpperCase() +
+        ' <b>' + tot.a + '</b></span>' +
+      '<span class="' + (tot.b > tot.a ? 'lead' : '') + '">' +
+        '<span class="rb-chip" style="background:' + B.primary + '"></span>' + B.name.toUpperCase() +
+        ' <b>' + tot.b + '</b></span>';
+    const first = panel.firstChild;
+    panel.insertBefore(head, first ? first.nextSibling : null);
+  };
+
+  /* ---- instructions: team-match scores are private ------------------- */
+
+  const prevIns = U.showInstructions;
+  U.showInstructions = function () {
+    prevIns.call(this);
+    const list = $('insList');
+    if (!list) return;
+    const last = list.lastElementChild;
+    if (!last) return;
+    if (this.g.mode === 'room' && SESSION.isMatchRoom) {
+      last.innerHTML = 'Your score stays <b>private to this match</b> — it counts toward your team&rsquo;s total on the match leaderboard, not the universal board.';
+    } else if (this.g.mode === 'room') {
+      last.innerHTML = 'Your score stays <b>private to this room</b> — friendly games don&rsquo;t touch the universal leaderboard.';
+    } else {
+      last.innerHTML = 'Your <b>total score is added to the universal leaderboard</b>.';
+    }
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — TEAM-VS-TEAM ROOMS
+   room-teams.js
+   --------------------------------------------------------------------------
+   Upgrades BOTH room types (private rooms and tournament match rooms) to the
+   same team-versus-team structure. Nothing is removed — the existing room
+   screen, spectators on the pitch and live scoreboard all still work.
+
+   What this adds:
+     • the host picks the two competing teams when creating a private room
+     • joiners may only choose one of those two teams
+     • turns alternate between the teams (next player is from the other side)
+     • a 10-second "NAME, it's your turn!" prompt; miss it and the turn is
+       skipped and 2 points go to the opposing team
+     • team totals (including skip bonuses) shown live
+     • a reusable confirmation pop-up and copy-to-clipboard buttons
+   ========================================================================== */
+'use strict';
+
+const TURN = {
+  ACCEPT_SECONDS: 10,      // time to press PLAY before the turn is skipped
+  SKIP_BONUS: 2,           // points awarded to the opposing team on a skip
+  FALLBACK_GRACE: 6,       // other clients step in this many seconds later
+  TICK_MS: 200,
+};
+
+(function roomTeams() {
+  const S2 = RoomSession.prototype;
+  const U = UI.prototype;
+
+  /* ==========================================================================
+     1. SESSION — team awareness, alternating turns, skips
+     ========================================================================== */
+
+  /** true for any room that has two competing teams */
+  Object.defineProperty(S2, 'isTeamRoom', {
+    configurable: true,
+    get() { return !!(this.state && this.state.teamA && this.state.teamB); },
+  });
+
+  S2.otherTeam = function (teamId) {
+    if (!this.isTeamRoom) return null;
+    return teamId === this.state.teamA ? this.state.teamB : this.state.teamA;
+  };
+
+  /** the next player to shoot — from the opposite team where possible */
+  function nextTurnIndex(state, lastTeam) {
+    const players = state.players || [];
+    const pending = players.map((p, i) => ({ p, i })).filter((x) => !x.p.done);
+    if (!pending.length) return -1;
+    if (lastTeam) {
+      const opp = pending.find((x) => x.p.teamId !== lastTeam);
+      if (opp) return opp.i;
+    }
+    return pending[0].i;
+  }
+
+  function stampTurn(state) {
+    state.turnStartedAt = Date.now();
+    const cur = (state.players || [])[state.turn];
+    if (cur) { cur.started = false; cur.status = 'up'; }
+  }
+
+  /**
+   * Hand over to the next player, or roll into the next round. A round is one
+   * full pass through the whole roster — once every player has taken their
+   * turn, the round ends. If more rounds remain, everyone's per-round flags
+   * reset (cumulative scores are kept) and the next round begins; otherwise
+   * the match is done.
+   */
+  function handOver(state, lastTeam) {
+    const idx = nextTurnIndex(state, lastTeam);
+    if (idx >= 0) { state.turn = idx; stampTurn(state); return; }
+    const rounds = state.rounds || 1;
+    const round = state.round || 1;
+    if (round < rounds) {
+      state.round = round + 1;
+      (state.players || []).forEach((p) => {
+        p.done = false; p.started = false; p.skipped = false;
+        p.status = 'waiting'; p.attempts = 0; p.left = CFG.ATTEMPTS;
+      });
+      state.turn = 0;
+      stampTurn(state);
+    } else {
+      state.status = 'done';
+    }
+  }
+
+  /* kick-off stamps the first turn */
+  const origStart = S2.start;
+  S2.start = async function () {
+    if (!this.state) return;
+    if (!(this.state.players || []).length) throw new Error('Nobody has joined yet.');
+    this.state.status = 'playing';
+    this.state.round = this.state.round || 1;
+    this.state.turn = 0;
+    stampTurn(this.state);
+    await this.push();
+  };
+
+  /* finishing a turn banks the round's points and hands over */
+  S2.submitTurn = async function (result) {
+    if (!this.state) return;
+    const cur = this.currentPlayer;
+    if (!cur) return;
+    /* score/goals accumulate across rounds */
+    cur.total = (cur.total || 0) + (result.score || 0);
+    cur.totalGoals = (cur.totalGoals || 0) + (result.goals || 0);
+    cur.turns = (cur.turns || 0) + 1;
+    cur.score = cur.total;
+    cur.goals = cur.totalGoals;
+    cur.timeMs = (cur.timeMs || 0) + Math.round(result.timeMs || 0);
+    cur.kicks = result.kicks || [];
+    cur.attempts = CFG.ATTEMPTS;
+    cur.left = 0;
+    cur.done = true;
+    cur.status = 'finished';
+    handOver(this.state, this.isTeamRoom ? cur.teamId : null);
+    await this.push();
+  };
+
+  /** the player didn't press PLAY in time */
+  S2.skipTurn = async function () {
+    if (!this.state || this.state.status !== 'playing') return;
+    const cur = this.currentPlayer;
+    if (!cur || cur.done || cur.started) return;
+    cur.done = true;
+    cur.status = 'skipped';
+    cur.skipped = true;
+    cur.left = 0;
+    cur.score = cur.total || 0;            // keep whatever they've banked
+    cur.goals = cur.totalGoals || 0;
+    if (this.isTeamRoom) {
+      const opp = this.otherTeam(cur.teamId);
+      this.state.bonus = this.state.bonus || {};
+      this.state.bonus[opp] = (this.state.bonus[opp] || 0) + TURN.SKIP_BONUS;
+    }
+    handOver(this.state, this.isTeamRoom ? cur.teamId : null);
+    await this.push();
+  };
+
+  /** the current player accepted their turn — stops the countdown everywhere */
+  S2.acceptTurn = async function () {
+    if (!this.state) return;
+    const cur = this.currentPlayer;
+    if (!cur) return;
+    cur.started = true;
+    cur.status = 'playing';
+    await this.push();
+  };
+
+  /** seconds left to press PLAY (negative once past the deadline) */
+  S2.turnSecondsLeft = function () {
+    if (!this.state || !this.state.turnStartedAt) return TURN.ACCEPT_SECONDS;
+    const gone = (Date.now() - this.state.turnStartedAt) / 1000;
+    return TURN.ACCEPT_SECONDS - gone;
+  };
+
+  /** totals per team, including points gifted by skipped turns */
+  S2.matchTotals = function () {
+    const st = this.state;
+    const t = { a: 0, b: 0, aGoals: 0, bGoals: 0, aPlayers: 0, bPlayers: 0, aBonus: 0, bBonus: 0 };
+    if (!st) return t;
+    (st.players || []).forEach((p) => {
+      if (p.teamId === st.teamA) { t.a += p.score || 0; t.aGoals += p.goals || 0; t.aPlayers++; }
+      else if (p.teamId === st.teamB) { t.b += p.score || 0; t.bGoals += p.goals || 0; t.bPlayers++; }
+    });
+    const bonus = st.bonus || {};
+    t.aBonus = bonus[st.teamA] || 0;
+    t.bBonus = bonus[st.teamB] || 0;
+    t.a += t.aBonus;
+    t.b += t.bBonus;
+    return t;
+  };
+
+  /** winning side once everyone has shot */
+  S2.teamWinner = function () {
+    if (!this.isTeamRoom || !this.state || this.state.status !== 'done') return null;
+    const t = this.matchTotals();
+    if (t.a === t.b) return null;
+    return t.a > t.b ? this.state.teamA : this.state.teamB;
+  };
+
+  /* ==========================================================================
+     2. CREATING A TEAM-VS-TEAM PRIVATE ROOM
+     ========================================================================== */
+
+  S2.createTeamRoom = async function (name, teamA, teamB, myTeam, rounds) {
+    if (!teamA || !teamB) throw new Error('Pick both competing teams.');
+    if (teamA === teamB) throw new Error('Pick two different teams.');
+    if (myTeam !== teamA && myTeam !== teamB) throw new Error('Pick which of the two teams you are on.');
+    const st = await ROOMS.create(name);
+    st.seq = 1;
+    st.teamA = teamA;
+    st.teamB = teamB;
+    st.bonus = {};
+    st.rounds = clamp(parseInt(rounds, 10) || 1, 1, 10);
+    st.round = 1;
+    const id = ROOMS.online ? ROOMS.me : ROOMS.me + '_s1';
+    st.players = [{
+      id, name, teamId: myTeam, score: 0, goals: 0, timeMs: 0,
+      attempts: 0, left: CFG.ATTEMPTS, status: 'waiting', done: false, kicks: [],
+    }];
+    st.host = id;
+    await ROOMS.save(st);
+    this._adopt(st);
+    return st;
+  };
+
+  /* ==========================================================================
+     3. SHARED UI HELPERS — pop-up + copy buttons
+     ========================================================================== */
+
+  /** a small confirmation pop-up; resolves when dismissed */
+  U.popup = function (title, lines, opts) {
+    const o = opts || {};
+    const host = $('popup');
+    if (!host) { return; }
+    const body = Array.isArray(lines) ? lines : [lines];
+    host.innerHTML =
+      '<div class="popup-card" role="dialog" aria-modal="true" aria-label="' + escapeHtml(title) + '">' +
+        '<div class="popup-title">' + (o.icon || '✔') + ' ' + escapeHtml(title) + '</div>' +
+        '<div class="popup-body">' + body.join('') + '</div>' +
+        '<button class="btn" id="popupOk" type="button">' + (o.ok || 'GOT IT') + '</button>' +
+      '</div>';
+    host.classList.add('show');
+    const close = () => {
+      host.classList.remove('show');
+      host.innerHTML = '';
+      document.removeEventListener('keydown', onKey);
+    };
+    const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); close(); } };
+    document.addEventListener('keydown', onKey);
+    const ok = $('popupOk');
+    if (ok) { ok.onclick = close; setTimeout(() => ok.focus(), 40); }
+    host.onclick = (e) => { if (e.target === host) close(); };
+  };
+
+  /** markup for a code with a copy button beside it */
+  U.codeWithCopy = function (code, label) {
+    return '<span class="code-copy">' +
+      '<b class="code-out">' + escapeHtml(code) + '</b>' +
+      '<button class="copy-btn" type="button" data-copy="' + escapeHtml(code) + '"' +
+        ' title="Copy ' + escapeHtml(label || 'code') + '" aria-label="Copy ' + escapeHtml(label || 'code') + '">⧉</button>' +
+      '</span>';
+  };
+
+  /* one delegated handler covers every copy button on every screen */
+  document.addEventListener('click', (e) => {
+    const b = e.target && e.target.closest ? e.target.closest('.copy-btn') : null;
+    if (!b) return;
+    const text = b.dataset.copy || '';
+    const done = () => {
+      const old = b.textContent;
+      b.textContent = '✔';
+      b.classList.add('copied');
+      setTimeout(() => { b.textContent = old; b.classList.remove('copied'); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(done);
+    } else done();
+  });
+
+  /* ==========================================================================
+     4. ROOM SCREEN — team pickers, turn prompt, team totals
+     ========================================================================== */
+
+  /** the two team selects shown when creating a private room */
+  U.buildRoomTeamPickers = function () {
+    const a = $('roomTeamA'), b = $('roomTeamB');
+    if (!a || a.options.length) return;
+    const opts = '<option value="">— team —</option>' + TEAMS.map((t) =>
+      '<option value="' + t.id + '">' + t.flag + ' ' + t.name + '</option>').join('');
+    a.innerHTML = opts;
+    b.innerHTML = opts;
+    a.value = 'IND';
+    b.value = 'USA';
+    const sync = () => { AUDIO.menuMove(); this.renderRoomSideChoice(); };
+    a.addEventListener('change', sync);
+    b.addEventListener('change', sync);
+    this.renderRoomSideChoice();
+  };
+
+  /** the kit grid becomes "which of these two are you on?" */
+  U.renderRoomSideChoice = function (pair, note) {
+    const host = $('roomTeamGrid');
+    if (!host) return;
+    let ids = pair;
+    if (!ids) {
+      const a = $('roomTeamA'), b = $('roomTeamB');
+      ids = [a ? a.value : '', b ? b.value : ''].filter(Boolean);
+    }
+    if (ids.length !== 2) {
+      host.innerHTML = '<p class="small muted">Pick the two competing teams above.</p>';
+      return;
+    }
+    host.dataset.built = '1';
+    host.innerHTML = ids.map((id, i) => {
+      const t = teamById(id);
+      return '<div class="team-card">' +
+        '<input type="radio" name="roomTeam" id="rteam_' + t.id + '" value="' + t.id + '"' +
+          (i === 0 ? ' checked' : '') + ' aria-label="' + t.name + '">' +
+        '<label class="team-face" for="rteam_' + t.id + '">' +
+          '<span class="flag" aria-hidden="true">' + t.flag + '</span>' +
+          '<span class="tname">' + t.name.toUpperCase() + '</span>' +
+          '<span class="swatch" aria-hidden="true">' +
+            '<i style="background:' + t.primary + '"></i>' +
+            '<i style="background:' + t.secondary + '"></i>' +
+            '<i style="background:' + t.accent + '"></i>' +
+          '</span>' +
+        '</label></div>';
+    }).join('');
+    $$('input[name="roomTeam"]', host).forEach((r) =>
+      r.addEventListener('change', () => AUDIO.menuMove()));
+    const hint = $('roomSideHint');
+    if (hint) hint.textContent = note || '';
+  };
+
+  /** looking up a typed room code so the joiner sees the right two teams */
+  U.lookupRoom = function (code) {
+    code = String(code || '').trim().toUpperCase();
+    if (code.length < 4) return;
+    if (this._lookedUp === code) return;
+    this._lookedUp = code;
+    ROOMS.fetch(code).then((st) => {
+      if (!st) { this.roomSay('No room with that code yet.', 'warn'); return; }
+      if (st.teamA && st.teamB) {
+        const A = teamById(st.teamA), B = teamById(st.teamB);
+        this.renderRoomSideChoice([st.teamA, st.teamB],
+          'Room found — ' + A.name.toUpperCase() + ' vs ' + B.name.toUpperCase() + '. Pick your side.');
+        const cr = $('roomCreateBlock');
+        if (cr) cr.style.display = 'none';       // joining, not creating
+        this.roomSay('Room found: ' + A.name + ' vs ' + B.name + '.', 'ok');
+      }
+    }).catch(() => {});
+  };
+
+  /* ---- the "it's your turn" prompt ------------------------------------- */
+
+  U.renderTurnPrompt = function () {
+    const host = $('turnPrompt');
+    if (!host) return;
+    const st = SESSION.state;
+    const onRoom = $('screen-room') && $('screen-room').classList.contains('active');
+    if (!SESSION.active || !st || st.status !== 'playing' || !onRoom) {
+      host.classList.remove('show');
+      return;
+    }
+    const cur = SESSION.currentPlayer;
+    if (!cur) { host.classList.remove('show'); return; }
+    const mine = SESSION.hotSeat ? true : cur.id === SESSION.me;
+    const t = teamById(cur.teamId);
+    const secs = Math.max(0, Math.ceil(SESSION.turnSecondsLeft()));
+    const nextP = (st.players || []).filter((p) => !p.done && p.id !== cur.id)
+      .find((p) => p.teamId !== cur.teamId) ||
+      (st.players || []).filter((p) => !p.done && p.id !== cur.id)[0];
+
+    host.classList.add('show');
+    host.className = 'turn-prompt show ' + (mine ? 'mine' : 'watching') + (secs <= 3 ? ' urgent' : '');
+    host.innerHTML =
+      '<div class="tp-line">' +
+        (mine ? escapeHtml(cur.name) + ', IT&rsquo;S YOUR TURN!' : escapeHtml(cur.name) + ' IS UP') +
+      '</div>' +
+      '<div class="tp-team"><span class="rb-chip" style="background:' + t.primary + '"></span>' +
+        t.name.toUpperCase() + '</div>' +
+      (cur.started
+        ? '<div class="tp-sub">Taking their 3 free kicks…</div>'
+        : '<div class="tp-count' + (secs <= 3 ? ' urgent' : '') + '">' + secs + 's</div>' +
+          '<div class="tp-sub">' + (mine
+            ? 'Press PLAY within ' + TURN.ACCEPT_SECONDS + 's or your turn is skipped and ' +
+              TURN.SKIP_BONUS + ' points go to ' + teamById(SESSION.otherTeam(cur.teamId) || cur.teamId).name.toUpperCase() + '.'
+            : 'Waiting for them to press PLAY…') + '</div>' +
+          (mine ? '<button class="btn big" id="btnTurnPlay" type="button">▶ PLAY NOW</button>' : '')) +
+      (nextP ? '<div class="tp-next">NEXT: ' + escapeHtml(nextP.name) + ' (' +
+        teamById(nextP.teamId).name.toUpperCase() + ')</div>' : '');
+
+    const play = $('btnTurnPlay');
+    if (play) play.onclick = () => {
+      AUDIO.menuSelect();
+      SESSION.acceptTurn().then(() => this.startRoomTurn());
+    };
+  };
+
+  /* ---- the countdown loop --------------------------------------------- */
+
+  U.startTurnWatch = function () {
+    if (this.turnWatch) return;
+    this.turnWatch = setInterval(() => {
+      const st = SESSION.state;
+      if (!SESSION.active || !st) return;
+      const onRoom = $('screen-room') && $('screen-room').classList.contains('active');
+      if (onRoom) this.renderTurnPrompt();
+      if (st.status !== 'playing') return;
+      const cur = SESSION.currentPlayer;
+      if (!cur || cur.done || cur.started) return;
+      const left = SESSION.turnSecondsLeft();
+      const mine = SESSION.hotSeat ? true : cur.id === SESSION.me;
+      /* the player on the clock skips at zero; anyone else steps in later so a
+         closed browser can never stall the match */
+      const due = mine ? 0 : -TURN.FALLBACK_GRACE;
+      if (left <= due && !this._skipping) {
+        this._skipping = true;
+        SESSION.skipTurn()
+          .then(() => {
+            AUDIO.tone({ type: 'square', freq: 240, to: 120, dur: 0.35, gain: 0.2 });
+            this.renderRoom();
+          })
+          .finally(() => { this._skipping = false; });
+      }
+    }, TURN.TICK_MS);
+  };
+
+  /* ==========================================================================
+     5. HOOK INTO THE EXISTING ROOM SCREEN
+     ========================================================================== */
+
+  const origRenderRoom = U.renderRoom;
+  U.renderRoom = function () {
+    origRenderRoom.call(this);
+    if (!SESSION.active) return;
+    this.startTurnWatch();
+    this.renderTurnPrompt();
+    this.renderRoomTeamBar();
+  };
+
+  /** live team-vs-team score strip above the standings table */
+  U.renderRoomTeamBar = function () {
+    const host = $('roomTeamBar');
+    if (!host) return;
+    if (!SESSION.isTeamRoom) { host.innerHTML = ''; host.classList.remove('show'); return; }
+    const st = SESSION.state;
+    const A = teamById(st.teamA), B = teamById(st.teamB);
+    const t = SESSION.matchTotals();
+    const w = SESSION.teamWinner();
+    const rounds = st.rounds || 1;
+    const roundTxt = rounds > 1 ? 'ROUND<br>' + (st.round || 1) + '/' + rounds : 'VS';
+    host.classList.add('show');
+    host.innerHTML =
+      '<div class="tb-side' + (t.a >= t.b ? ' lead' : '') + (w === st.teamA ? ' won' : '') + '">' +
+        '<span class="rb-chip" style="background:' + A.primary + '"></span>' +
+        '<span class="tb-name">' + A.flag + ' ' + A.name.toUpperCase() + '</span>' +
+        '<b>' + t.a + '</b>' +
+        '<em>' + t.aGoals + 'G · ' + t.aPlayers + 'p' + (t.aBonus ? ' · +' + t.aBonus + ' bonus' : '') + '</em>' +
+      '</div>' +
+      '<div class="tb-vs">' + roundTxt + '</div>' +
+      '<div class="tb-side' + (t.b > t.a ? ' lead' : '') + (w === st.teamB ? ' won' : '') + '">' +
+        '<span class="rb-chip" style="background:' + B.primary + '"></span>' +
+        '<span class="tb-name">' + B.flag + ' ' + B.name.toUpperCase() + '</span>' +
+        '<b>' + t.b + '</b>' +
+        '<em>' + t.bGoals + 'G · ' + t.bPlayers + 'p' + (t.bBonus ? ' · +' + t.bBonus + ' bonus' : '') + '</em>' +
+      '</div>';
+  };
+
+  /* ---- rebind create / join for team rooms --------------------------- */
+
+  const origBind = U.bindButtons;
+  U.bindButtons = function () {
+    origBind.call(this);
+
+    /* CREATE: now needs both teams plus the host's side */
+    const c = $('btnRoomCreate');
+    if (c) {
+      const fresh = c.cloneNode(true);
+      c.parentNode.replaceChild(fresh, c);
+      fresh.addEventListener('click', () => {
+        const name = String(($('roomName') || {}).value || '').trim().slice(0, 24).toUpperCase();
+        if (!name) { this.roomSay('Enter your name first.', 'warn'); return; }
+        const a = $('roomTeamA').value, b = $('roomTeamB').value;
+        const rounds = $('roomRounds') ? $('roomRounds').value : 1;
+        const picked = document.querySelector('input[name="roomTeam"]:checked');
+        Prefs.merge({ name });
+        AUDIO.onUserGesture();
+        SESSION.createTeamRoom(name, a, b, picked ? picked.value : a, rounds)
+          .then(() => {
+            AUDIO.menuSelect();
+            const A = teamById(a), B = teamById(b);
+            const rN = SESSION.state.rounds || 1;
+            this.popup('Room Created', [
+              '<p>Share this code with your friends:</p>',
+              '<p class="popup-code">' + this.codeWithCopy(SESSION.code, 'room code') + '</p>',
+              '<p class="small muted">' + A.name.toUpperCase() + ' vs ' + B.name.toUpperCase() +
+                ' — friends pick one of these two teams when they join.</p>',
+              '<p class="small muted">' + rN + ' round' + (rN === 1 ? '' : 's') +
+                ' · every player takes 3 kicks each round.</p>',
+            ], { icon: '👥' });
+            this.renderRoom();
+          })
+          .catch((e) => { AUDIO.error(); this.roomSay(e.message, 'warn'); });
+      });
+    }
+
+    /* JOIN: look the room up so only its two teams are offered */
+    const j = $('btnRoomJoin');
+    if (j) {
+      const fresh = j.cloneNode(true);
+      j.parentNode.replaceChild(fresh, j);
+      fresh.addEventListener('click', () => {
+        const name = String(($('roomName') || {}).value || '').trim().slice(0, 24).toUpperCase();
+        const code = String(($('roomCode') || {}).value || '').trim().toUpperCase();
+        if (!name) { this.roomSay('Enter a name for this player.', 'warn'); return; }
+        if (!code) { this.roomSay('Enter the room code.', 'warn'); return; }
+        const picked = document.querySelector('input[name="roomTeam"]:checked');
+        Prefs.merge({ name });
+        AUDIO.onUserGesture();
+        const teamId = picked ? picked.value : null;
+        const go = SESSION.isTeamRoomCode !== false && teamId
+          ? SESSION.joinMatch(code, name, teamId).catch((err) => {
+              /* a plain room without teams still accepts the old join */
+              if (/not a match room/i.test(err.message)) return SESSION.join(code, name, teamId);
+              throw err;
+            })
+          : SESSION.join(code, name, teamId);
+        go.then(() => {
+          AUDIO.menuSelect();
+          this.pendingSeat = false;
+          SESSION.onChange = () => this.renderRoom();
+          this.renderRoom();
+        }).catch((e) => { AUDIO.error(); this.roomSay(e.message, 'warn'); });
+      });
+    }
+
+    /* widen the code field to 6 and look the room up as it's typed */
+    const cf = $('roomCode');
+    if (cf) {
+      const fresh = cf.cloneNode(true);
+      cf.parentNode.replaceChild(fresh, cf);
+      fresh.addEventListener('input', () => {
+        fresh.value = fresh.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+        if (fresh.value.length >= 4) this.lookupRoom(fresh.value);
+      });
+      fresh.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); const b = $('btnRoomJoin'); if (b) b.click(); }
+      });
+    }
+  };
+
+  /* build the pickers whenever the friendly room screen opens */
+  const origOpenRoom = U.openRoom;
+  U.openRoom = function () {
+    origOpenRoom.call(this);
+    const cr = $('roomCreateBlock');
+    if (cr) cr.style.display = '';
+    this._lookedUp = null;
+    this.buildRoomTeamPickers();
+  };
+
+  /* ==========================================================================
+     6. STANDINGS ROWS — show kicks taken and skipped turns
+     ========================================================================== */
+
+  const origRenderRoom2 = U.renderRoom;
+  U.renderRoom = function () {
+    origRenderRoom2.call(this);
+    if (!SESSION.active) return;
+    const body = $('roomPlayersBody');
+    const st = SESSION.state;
+    if (!body || !st) return;
+    const cur = SESSION.currentPlayer;
+    const order = st.status === 'lobby' ? st.players : SESSION.standings;
+    body.innerHTML = order.map((p, i) => {
+      const t = teamById(p.teamId);
+      const isCur = cur && p.id === cur.id && st.status === 'playing';
+      const meRow = p.id === SESSION.me && !SESSION.hotSeat;
+      const status = p.skipped ? '<b class="skip-tag">SKIPPED</b>'
+        : p.done ? '✔ finished'
+        : isCur ? (p.started ? '<b class="live-dot">SHOOTING</b>' : '<b class="up-tag">ON THE CLOCK</b>')
+        : st.status === 'lobby' ? (p.id === st.host ? 'host' : 'ready')
+        : 'waiting';
+      const kicks = p.done ? (p.skipped ? '0/3' : CFG.ATTEMPTS + '/' + CFG.ATTEMPTS)
+        : (p.attempts || 0) + '/' + CFG.ATTEMPTS;
+      return '<tr' + (meRow ? ' class="me"' : '') + '>' +
+        '<td class="num">' + (i + 1) + '</td>' +
+        '<td>' + escapeHtml(p.name) + '</td>' +
+        '<td><span class="chip" style="background:' + t.primary + '"></span>' + t.flag + '</td>' +
+        '<td class="num">' + (p.goals || 0) + '</td>' +
+        '<td class="num">' + (p.score || 0) + '</td>' +
+        '<td class="num">' + kicks + '</td>' +
+        '<td>' + status + '</td></tr>';
+    }).join('');
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — LIVE MATCH ON THE FIELD
+   room-field.js
+   --------------------------------------------------------------------------
+   Keeps the whole Private Room / Team Match experience ON the football field
+   instead of a separate panel. Once a match kicks off, everyone sits on the
+   pitch: the shooter takes their kicks, everyone else spectates the scene with
+   name-plates, a compact top-right leaderboard, and turn overlays drawn right
+   over the field.
+
+   Nothing here removes the room panel — it remains the lobby (join, pick your
+   side, wait for kick-off). This layer only takes over once play begins.
+
+   Loads after room-ui / room-live / room-teams so its wrappers sit outermost.
+   ========================================================================== */
+'use strict';
+
+(function roomField() {
+  const U = UI.prototype;
+  const G = Game.prototype;
+
+  /* ==========================================================================
+     1. INSTRUCTIONS — shown once ever, then remembered
+     ========================================================================== */
+
+  const prevShowInstructions = U.showInstructions;
+  U.showInstructions = function () {
+    const seen = !!Prefs.read().instructionsSeen;
+    if (seen) { this.beginChallenge(); return; }   // straight into the kicks
+    Prefs.merge({ instructionsSeen: true });
+    prevShowInstructions.call(this);
+  };
+
+  /* ==========================================================================
+     2. MOVING EVERYONE ONTO THE FIELD ONCE PLAY BEGINS
+     ========================================================================== */
+
+  U.enterFieldSpectate = function () {
+    this.setMode('room');
+    if (!$('screen-game').classList.contains('active')) this.showScreen('game');
+    if (!IN_MATCH[this.g.state]) this.g.setState(S.SPECTATE);
+    this.g.ui.syncHud();
+    this.renderRoomScoreboard();
+    this.renderFieldOverlay();
+  };
+
+  /** called on every room update; decides whether to sit on the field */
+  U.maybeEnterField = function () {
+    if (this.g.mode !== 'room' || !SESSION.active) return;
+    const st = SESSION.state;
+    if (!st) return;
+    if (st.status === 'lobby') return;                 // lobby stays on the panel
+    if (this._shootingTurn) { this.renderFieldOverlay(); return; }  // I'm mid-kicks
+    if (IN_MATCH[this.g.state]) return;                // safety: a live state is running
+    this.enterFieldSpectate();
+  };
+
+  /* fold the field logic into the existing room render pass */
+  const prevRenderRoom = U.renderRoom;
+  U.renderRoom = function () {
+    prevRenderRoom.call(this);
+    this.maybeEnterField();
+  };
+
+  /* keep the field overlay's countdown ticking with the turn watch */
+  const prevTurnPrompt = U.renderTurnPrompt;
+  U.renderTurnPrompt = function () {
+    prevTurnPrompt.call(this);
+    this.renderFieldOverlay();
+  };
+
+  /* ==========================================================================
+     3. THE FIELD OVERLAY — turn accept, watching, next player, final
+     ========================================================================== */
+
+  U.renderFieldOverlay = function () {
+    const host = $('fieldOverlay');
+    if (!host) return;
+    const onField = $('screen-game') && $('screen-game').classList.contains('active');
+    const st = SESSION.state;
+
+    if (!onField || this.g.mode !== 'room' || !SESSION.active || !st) {
+      host.classList.remove('show'); host.innerHTML = ''; return;
+    }
+
+    /* ---- match over: standings + winner + celebration ---- */
+    if (st.status === 'done') {
+      host.className = 'field-overlay show done';
+      host.innerHTML = this.fieldFinalHtml();
+      this.wireFieldFinal();
+      this.celebrateWinner();
+      return;
+    }
+
+    if (st.status !== 'playing') { host.classList.remove('show'); host.innerHTML = ''; return; }
+    this._celebrated = false;   // a fresh/continuing match can celebrate again later
+
+    const cur = SESSION.currentPlayer;
+    if (!cur) { host.classList.remove('show'); host.innerHTML = ''; return; }
+    const mine = SESSION.hotSeat ? true : cur.id === SESSION.me;
+
+    /* the shooter, once they've started, gets a clear field — they're playing */
+    if (cur.started && (mine || this._shootingTurn)) { host.classList.remove('show'); host.innerHTML = ''; return; }
+
+    const t = teamById(cur.teamId);
+    const secs = Math.max(0, Math.ceil(SESSION.turnSecondsLeft()));
+    const nextP = (st.players || []).filter((p) => !p.done && p.id !== cur.id)
+      .find((p) => SESSION.isTeamRoom ? p.teamId !== cur.teamId : true) ||
+      (st.players || []).filter((p) => !p.done && p.id !== cur.id)[0];
+    const nextLine = nextP
+      ? '<div class="fo-next">NEXT: ' + escapeHtml(nextP.name) + ' · ' + teamById(nextP.teamId).name.toUpperCase() + '</div>'
+      : '<div class="fo-next">LAST TURN OF THE MATCH</div>';
+
+    const urgent = secs <= 3;
+    host.className = 'field-overlay show ' + (mine ? 'mine' : 'watching') + (urgent ? ' urgent' : '');
+
+    if (cur.started) {
+      /* someone else is taking their kicks */
+      host.innerHTML =
+        '<div class="fo-card watching">' +
+          '<div class="fo-line">' + escapeHtml(cur.name) + ' IS SHOOTING</div>' +
+          '<div class="fo-team"><span class="rb-chip" style="background:' + t.primary + '"></span>' + t.name.toUpperCase() + '</div>' +
+          '<div class="fo-sub">Watch the live scores update top-right.</div>' +
+          nextLine +
+        '</div>';
+      return;
+    }
+
+    /* a turn is waiting to be accepted */
+    const opp = SESSION.otherTeam ? SESSION.otherTeam(cur.teamId) : null;
+    host.innerHTML =
+      '<div class="fo-card">' +
+        '<div class="fo-line">' + (mine ? escapeHtml(cur.name) + ', IT&rsquo;S YOUR TURN!' : escapeHtml(cur.name) + ' IS UP') + '</div>' +
+        '<div class="fo-team"><span class="rb-chip" style="background:' + t.primary + '"></span>' + t.name.toUpperCase() + '</div>' +
+        '<div class="fo-count' + (urgent ? ' urgent' : '') + '">' + secs + 's</div>' +
+        (mine
+          ? '<button class="btn big" id="btnFieldPlay" type="button">▶ PLAY</button>' +
+            '<div class="fo-sub">Press PLAY within ' + TURN.ACCEPT_SECONDS + 's or your turn is skipped' +
+              (opp ? ' and ' + TURN.SKIP_BONUS + ' points go to ' + teamById(opp).name.toUpperCase() : '') + '.</div>'
+          : '<div class="fo-sub">Waiting for ' + escapeHtml(cur.name) + ' to press PLAY…</div>') +
+        nextLine +
+      '</div>';
+
+    const play = $('btnFieldPlay');
+    if (play) play.onclick = () => {
+      AUDIO.menuSelect();
+      this._shootingTurn = true;
+      SESSION.acceptTurn().then(() => {
+        host.classList.remove('show');
+        this.startRoomTurn();
+      });
+    };
+  };
+
+  U.fieldFinalHtml = function () {
+    const st = SESSION.state;
+    const board = SESSION.standings;
+    let html = '<div class="fo-card final">';
+    if (SESSION.isTeamRoom) {
+      const A = teamById(st.teamA), B = teamById(st.teamB);
+      const t = SESSION.matchTotals();
+      const w = SESSION.teamWinner();
+      html += '<div class="fo-line">' + (w ? teamById(w).flag + ' ' + teamById(w).name.toUpperCase() + ' WIN!' : 'IT&rsquo;S A DRAW!') + '</div>' +
+        '<div class="fo-teamscore">' +
+          '<span' + (w === st.teamA ? ' class="win"' : '') + '>' + A.name.toUpperCase() + ' <b>' + t.a + '</b></span>' +
+          '<span class="fo-vs">vs</span>' +
+          '<span' + (w === st.teamB ? ' class="win"' : '') + '>' + B.name.toUpperCase() + ' <b>' + t.b + '</b></span>' +
+        '</div>';
+    } else {
+      const w = SESSION.winner;
+      html += '<div class="fo-line">' + (w ? '🏆 ' + escapeHtml(w.name) + ' WINS!' : 'FULL TIME') + '</div>';
+    }
+    html += '<ol class="fo-rank">' + board.map((p) => {
+      const t = teamById(p.teamId);
+      return '<li><span class="rb-chip" style="background:' + t.primary + '"></span>' +
+        escapeHtml(p.name) + ' <em>' + t.name.toUpperCase() + '</em>' +
+        '<b>' + (p.score || 0) + '</b><span class="fo-g">' + (p.goals || 0) + 'G' +
+        (p.skipped ? ' · skipped' : '') + '</span></li>';
+    }).join('') + '</ol>';
+    html += '<div class="fo-actions">' +
+      (SESSION.isHost ? '<button class="btn" id="btnFieldAgain" type="button">↻ REMATCH</button>' : '') +
+      '<button class="btn alt" id="btnFieldLeave" type="button">LEAVE</button>' +
+      '</div></div>';
+    return html;
+  };
+
+  /** fireworks, confetti and a crowd roar for the winners — fired once */
+  U.celebrateWinner = function () {
+    if (this._celebrated) return;
+    this._celebrated = true;
+    const g = this.g;
+    const w = SESSION.isTeamRoom ? SESSION.teamWinner() : (SESSION.winner ? SESSION.winner.teamId : null);
+    /* tint the confetti toward the winning team's colours */
+    if (g.fx) {
+      g.fx.confetti(220);
+      for (let i = 0; i < 8; i++) g.fx.firework(0.15 + i * 0.4);
+    }
+    if (g.renderer && g.renderer.flash) g.renderer.flash('#ffffff', 0.18);
+    if (!AUDIO.playSample('cheer')) AUDIO.crowdCheer(1);
+    AUDIO.fanfare(true);
+    void w;
+  };
+
+  U.wireFieldFinal = function () {
+    const again = $('btnFieldAgain');
+    if (again) again.onclick = () => {
+      AUDIO.menuSelect();
+      SESSION.reset().then(() => { this._shootingTurn = false; this.showRoom(); });
+    };
+    const leave = $('btnFieldLeave');
+    if (leave) leave.onclick = () => {
+      AUDIO.menuSelect();
+      SESSION.leave().then(() => {
+        this._shootingTurn = false;
+        this.showScreen('welcome');
+        this.g.setState(S.WELCOME);
+        this.refreshLeaderboard();
+      });
+    };
+  };
+
+  /* ==========================================================================
+     4. TURN LIFECYCLE — begin on the field, hand over on the field
+     ========================================================================== */
+
+  /* startRoomTurn already sets pending + shows the (now once-only) how-to card;
+     mark that I'm the one shooting so polls don't yank me into spectate */
+  const prevStartRoomTurn = U.startRoomTurn;
+  U.startRoomTurn = function () {
+    this._shootingTurn = true;
+    prevStartRoomTurn.call(this);
+  };
+
+  /* after my three kicks, stay on the field and hand over — never bounce to
+     the room panel */
+  const prevEnd = G.endMatch;
+  G.endMatch = function () {
+    if (this.mode === 'room' && SESSION.active) {
+      const payload = {
+        score: this.board.score,
+        goals: this.board.goals,
+        timeMs: this.eventTimeMs || 0,
+        kicks: this.board.history.map((h) => ({ o: h.outcome, p: h.points })),
+      };
+      this.setState(S.SPECTATE);                 // back to watching immediately
+      SESSION.submitTurn(payload).then(() => {
+        this.ui._shootingTurn = false;
+        this.ui.enterFieldSpectate();            // shows "next player" / final overlay
+      });
+      return;
+    }
+    return prevEnd.call(this);
+  };
+})();
+
+</script>
+<script>
+/* ==========================================================================
+   FREEKICK — LIVE UPDATES OVER WEBSOCKETS
+   realtime.js
+   --------------------------------------------------------------------------
+   Replaces second-by-second polling with an actual WebSocket so a match feels
+   live. It speaks Supabase Realtime's Phoenix-channel protocol directly — no
+   SDK, no build step, still one static file.
+
+   How it works:
+     • one socket to  wss://<project>.supabase.co/realtime/v1/websocket
+     • each room joins a BROADCAST channel named  room:<CODE>
+     • after any client writes room state it broadcasts a tiny "sync" nudge
+     • every other client hears it in ~50ms and re-reads the row immediately
+
+   Why broadcast rather than Postgres change-feeds: broadcast needs no database
+   configuration at all (no publication/replication SQL), so it works on a
+   fresh project with just the anon key. The REST row stays the source of
+   truth, so a dropped socket can never corrupt a match.
+
+   Fallback: polling never goes away — it just slows to a 5s safety net while
+   the socket is healthy, and returns to 1s if the socket drops. So the game
+   still works on locked-down networks that block WebSockets.
+   ========================================================================== */
+'use strict';
+
+const RT = {
+  HEARTBEAT_MS: 25000,
+  RECONNECT_MIN: 1000,
+  RECONNECT_MAX: 15000,
+  POLL_FAST: 1000,      // no socket: poll like before
+  POLL_SLOW: 5000,      // socket healthy: just a safety net
+};
+
+class Realtime {
+  constructor() {
+    this.ws = null;
+    this.ref = 0;
+    this.topics = new Map();     // topic -> { joined, handlers[] }
+    this.status = 'idle';        // idle | connecting | open | closed | unsupported
+    this.retry = RT.RECONNECT_MIN;
+    this.hb = null;
+    this.onStatus = null;
+    this.lastError = null;
+  }
+
+  get connected() { return this.status === 'open'; }
+
+  socketUrl() {
+    const cfg = BACKEND.cfg || {};
+    if (!cfg.url || !cfg.anonKey) return null;
+    const base = String(cfg.url).replace(/^http/, 'ws').replace(/\/+$/, '');
+    return base + '/realtime/v1/websocket?apikey=' + encodeURIComponent(cfg.anonKey) + '&vsn=1.0.0';
+  }
+
+  connect() {
+    if (typeof WebSocket === 'undefined') { this._set('unsupported'); return; }
+    if (this.ws && (this.status === 'open' || this.status === 'connecting')) return;
+    const url = this.socketUrl();
+    if (!url) { this._set('idle'); return; }
+
+    this._set('connecting');
+    let ws;
+    try { ws = new WebSocket(url); }
+    catch (err) { this.lastError = err.message; this._set('closed'); this._scheduleReconnect(); return; }
+    this.ws = ws;
+
+    ws.onopen = () => {
+      this.retry = RT.RECONNECT_MIN;
+      this._set('open');
+      this._startHeartbeat();
+      /* (re)join every topic we care about */
+      this.topics.forEach((t, topic) => { t.joined = false; this._join(topic); });
+    };
+
+    ws.onmessage = (ev) => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch (_) { return; }
+      if (!msg || !msg.topic) return;
+      if (msg.event === 'phx_reply') {
+        const t = this.topics.get(msg.topic);
+        if (t && msg.payload && msg.payload.status === 'ok') {
+          /* the join for this topic is live; publishes will now fan out */
+          t.joined = true;
+          if (this.onStatus) { try { this.onStatus(this.status); } catch (_) {} }
+        }
+        return;
+      }
+      if (msg.event === 'broadcast') {
+        const t = this.topics.get(msg.topic);
+        if (!t) return;
+        const inner = msg.payload && msg.payload.payload ? msg.payload.payload : {};
+        const evName = msg.payload && msg.payload.event ? msg.payload.event : '';
+        t.handlers.forEach((fn) => { try { fn(evName, inner); } catch (_) {} });
+      }
+    };
+
+    ws.onerror = () => { this.lastError = 'socket error'; };
+
+    ws.onclose = () => {
+      this._stopHeartbeat();
+      this.topics.forEach((t) => { t.joined = false; });
+      if (this.status !== 'unsupported') this._set('closed');
+      this._scheduleReconnect();
+    };
+  }
+
+  disconnect() {
+    this._stopHeartbeat();
+    if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+    if (this.ws) { try { this.ws.close(); } catch (_) {} }
+    this.ws = null;
+    this.topics.clear();
+    this._set('idle');
+  }
+
+  _set(s) {
+    if (this.status === s) return;
+    this.status = s;
+    if (this.onStatus) { try { this.onStatus(s); } catch (_) {} }
+  }
+
+  _scheduleReconnect() {
+    if (this.reconnectTimer) return;
+    if (!this.topics.size) return;               // nothing to listen for
+    const wait = this.retry;
+    this.retry = Math.min(RT.RECONNECT_MAX, Math.round(this.retry * 1.8));
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect();
+    }, wait);
+  }
+
+  _startHeartbeat() {
+    this._stopHeartbeat();
+    this.hb = setInterval(() => {
+      this._send({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: String(++this.ref) });
+    }, RT.HEARTBEAT_MS);
+  }
+
+  _stopHeartbeat() {
+    if (this.hb) { clearInterval(this.hb); this.hb = null; }
+  }
+
+  _send(obj) {
+    if (!this.ws || this.ws.readyState !== 1) return false;
+    try { this.ws.send(JSON.stringify(obj)); return true; }
+    catch (_) { return false; }
+  }
+
+  _join(topic) {
+    this._send({
+      topic,
+      event: 'phx_join',
+      payload: {
+        config: {
+          broadcast: { self: false, ack: false },
+          presence: { key: '' },
+        },
+      },
+      ref: String(++this.ref),
+    });
+  }
+
+  /** listen on a channel; returns an unsubscribe function */
+  subscribe(name, handler) {
+    const topic = 'realtime:' + name;
+    let t = this.topics.get(topic);
+    if (!t) { t = { joined: false, handlers: [] }; this.topics.set(topic, t); }
+    t.handlers.push(handler);
+    this.connect();
+    if (this.connected && !t.joined) this._join(topic);
+    return () => {
+      const cur = this.topics.get(topic);
+      if (!cur) return;
+      cur.handlers = cur.handlers.filter((h) => h !== handler);
+      if (!cur.handlers.length) {
+        this._send({ topic, event: 'phx_leave', payload: {}, ref: String(++this.ref) });
+        this.topics.delete(topic);
+      }
+    };
+  }
+
+  /** tell everyone else on a channel that something changed */
+  publish(name, event, payload) {
+    const topic = 'realtime:' + name;
+    return this._send({
+      topic,
+      event: 'broadcast',
+      payload: { type: 'broadcast', event: event, payload: payload || {} },
+      ref: String(++this.ref),
+    });
+  }
+}
+
+const LIVE = new Realtime();
+
+/* ==========================================================================
+   WIRING — rooms and the organiser dashboard ride the socket
+   ========================================================================== */
+
+(function wireRealtime() {
+  const S2 = RoomSession.prototype;
+
+  /* ---- a room subscribes on adopt, unsubscribes on leave -------------- */
+
+  const origAdopt = S2._adopt;
+  S2._adopt = function (st) {
+    origAdopt.call(this, st);
+    this._liveJoin();
+  };
+
+  S2._liveJoin = function () {
+    if (!this.code) return;
+    if (this._liveOff && this._liveCode === this.code) return;   // already on it
+    if (this._liveOff) { this._liveOff(); this._liveOff = null; }
+    if (!BACKEND.online) return;                                  // hot-seat: no socket
+    this._liveCode = this.code;
+    this._liveOff = LIVE.subscribe('room:' + this.code, () => {
+      /* somebody changed the room — read it now rather than on the next tick */
+      this.poll();
+    });
+    this._retune();
+  };
+
+  /** slow the poll down while the socket is healthy */
+  S2._retune = function () {
+    const want = LIVE.connected ? RT.POLL_SLOW : RT.POLL_FAST;
+    if (this._pollEvery === want) return;
+    this._pollEvery = want;
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = setInterval(() => this.poll(), want);
+    }
+  };
+
+  const origStartPolling = S2.startPolling;
+  S2.startPolling = function () {
+    this.stopPolling();
+    const every = LIVE.connected ? RT.POLL_SLOW : RT.POLL_FAST;
+    this._pollEvery = every;
+    this.timer = setInterval(() => this.poll(), every);
+  };
+
+  const origLeave = S2.leave;
+  S2.leave = function () {
+    if (this._liveOff) { this._liveOff(); this._liveOff = null; this._liveCode = null; }
+    return origLeave.call(this);
+  };
+
+  /* ---- every write nudges the other clients --------------------------- */
+
+  const origPush = S2.push;
+  S2.push = async function () {
+    const r = await origPush.call(this);
+    if (this.code && BACKEND.online) {
+      LIVE.publish('room:' + this.code, 'sync', { at: Date.now(), by: this.me });
+    }
+    return r;
+  };
+
+  /* ---- the dashboard listens to its tournament ------------------------ */
+
+  const U = UI.prototype;
+
+  const origOpenDash = U.openDash;
+  U.openDash = function (state) {
+    origOpenDash.call(this, state);
+    const st = this.tstate;
+    if (!st || !BACKEND.online) return;
+    if (this._dashOff) { this._dashOff(); this._dashOff = null; }
+    this._dashOff = LIVE.subscribe('tourney:' + st.id, () => this.refreshDash(true));
+    /* match rooms broadcast on their own channels, so follow each of them too */
+    this._dashRoomOffs = (this._dashRoomOffs || []);
+    this._dashRoomOffs.forEach((off) => off());
+    this._dashRoomOffs = (st.matches || []).map((m) =>
+      LIVE.subscribe('room:' + m.roomCode, () => this.refreshDash(true)));
+  };
+
+  /* keep the tournament channel fed when the organiser changes something */
+  if (typeof TournamentStore !== 'undefined') {
+    const origSave = TournamentStore.prototype.save;
+    TournamentStore.prototype.save = async function (state) {
+      const r = await origSave.call(this, state);
+      if (state && state.id && BACKEND.online) {
+        LIVE.publish('tourney:' + state.id, 'sync', { at: Date.now() });
+      }
+      return r;
+    };
+  }
+
+  /* ---- retune polling whenever the socket state flips ----------------- */
+
+  LIVE.onStatus = () => {
+    if (SESSION && SESSION.active) SESSION._retune();
+    const el = document.getElementById('liveBadge');
+    if (!el) return;
+    const s = LIVE.status;
+    const live = s === 'open';
+    el.className = 'live-badge ' + (live ? 'on' : 'off');
+    el.textContent = live ? '⚡ LIVE' : (s === 'connecting' ? '… CONNECTING' : '◌ POLLING');
+    el.title = live
+      ? 'Real-time updates over WebSocket'
+      : 'WebSocket unavailable — falling back to polling every second';
   };
 })();
 

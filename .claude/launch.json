@@ -4,8 +4,15 @@
     {
       "name": "freekick",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8480", "--bind", "127.0.0.1"],
-      "port": 8480
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8480",
+        "--bind",
+        "127.0.0.1"
+      ],
+      "port": 8480,
+      "autoPort": false
     }
   ]
 }

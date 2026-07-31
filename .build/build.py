@@ -3,7 +3,8 @@ root = pathlib.Path(__file__).resolve().parent.parent
 tpl = (root/'.build/index.template.html').read_text()
 js  = (root/'game.js').read_text()
 
-EVENT_JS = ['event.js', 'event-ui.js', 'multiplayer.js', 'room-ui.js', 'room-live.js', 'sound.js']
+EVENT_JS = ['event.js', 'event-ui.js', 'multiplayer.js', 'room-ui.js', 'room-live.js',
+            'tournament.js', 'tournament-ui.js', 'room-teams.js', 'room-field.js', 'realtime.js', 'sound.js']
 
 def emit(out_html, css_name, extra_js, split_dir):
     css = (root/css_name).read_text()
@@ -26,6 +27,11 @@ def emit(out_html, css_name, extra_js, split_dir):
     (d/'game.js').write_text(js)
     for name in extras:
         (d/name).write_text((root/name).read_text())
+    # prune stale scripts left behind by removed features
+    keep = set(extras) | {'game.js', 'index.html', css_name}
+    for f in d.glob('*.js'):
+        if f.name not in keep:
+            f.unlink()
     # recorded sounds ride along so the split builds stay complete
     audio_src = root/'audio'
     if audio_src.is_dir():

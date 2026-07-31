@@ -1802,6 +1802,7 @@ const S = {
   NEXT_ATTEMPT: 'NEXT_ATTEMPT',
   FINAL_RESULTS: 'FINAL_RESULTS',
   HIGH_SCORES: 'HIGH_SCORES',
+  SPECTATE: 'SPECTATE',        // watching a room match on the field, no input
 };
 
 const IN_MATCH = { READY: 1, AIMING: 1, CHARGING: 1, FLIGHT: 1, RESULT: 1, NEXT_ATTEMPT: 1 };
@@ -1882,6 +1883,9 @@ class Input {
         if (e.key === 'Enter' && g.state === S.REGISTER) { e.preventDefault(); g.ui.tryStart(); }
         return;
       }
+
+      /* spectators watch the field but drive nothing (mute/restart handled above) */
+      if (g.state === S.SPECTATE) { this._maybePreventScroll(e); return; }
 
       switch (e.key) {
         case 'ArrowLeft': this.held.left = true; break;
@@ -2517,6 +2521,12 @@ class Game {
         else this.beginAttempt();
         break;
 
+      case S.SPECTATE:
+        /* watching a room match: keep the scene alive, take no input */
+        this.keeper.updateIdle(dt);
+        this.kicker.update(dt);
+        break;
+
       default:
         /* menus: keep the crowd alive behind the panels */
         this.keeper.updateIdle(dt);
@@ -2573,7 +2583,7 @@ class Game {
     R.drawGoalNet(this.time);
 
     const b = this.ball;
-    const showMatch = IN_MATCH[this.state] || this.state === S.FINAL_RESULTS;
+    const showMatch = IN_MATCH[this.state] || this.state === S.FINAL_RESULTS || this.state === S.SPECTATE;
 
     /* keeper sits just in front of the goal line */
     R.shadow(this.keeper.x, this.keeper.z, 0.62);

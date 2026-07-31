@@ -70,8 +70,10 @@
     const mine = this.selectedTeam === m.currentTeam;
     el.className = 'match-notice' + (mine ? ' ok' : ' warn');
     el.innerHTML =
-      '<b>' + roundLabel(m.round) + '</b> &nbsp;·&nbsp; NOW SHOOTING: <b>' + cur.name.toUpperCase() +
+      '<b>' + roundLabel(m.round) + '</b> <span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span>' +
+      ' &nbsp;·&nbsp; NOW SHOOTING: <b>' + cur.name.toUpperCase() +
       '</b> &nbsp;·&nbsp; UP NEXT: ' + next.name.toUpperCase() +
+      (isRapid(m) ? ' &nbsp;·&nbsp; <b>60s — most goals wins</b>' : '') +
       (mine ? '' : '<br><b>Heads up:</b> you picked ' + teamById(this.selectedTeam).name.toUpperCase() +
         ', so your score counts on the leaderboard but not toward this match.');
   };
@@ -113,7 +115,8 @@
     const ctx = $('insMatch');
     if (ctx) {
       ctx.textContent = m
-        ? roundLabel(m.round) + ' — ' + teamById(m.teamA).name.toUpperCase() + ' vs ' + teamById(m.teamB).name.toUpperCase()
+        ? roundLabel(m.round) + ' (' + (isRapid(m) ? '1-min rapid-fire' : '3 free kicks') + ') — ' +
+          teamById(m.teamA).name.toUpperCase() + ' vs ' + teamById(m.teamB).name.toUpperCase()
         : 'Practice mode — no live match';
     }
     this.showScreen('instructions');
@@ -312,15 +315,17 @@
         const live = m.status === 'live';
         const winA = m.winner === m.teamA, winB = m.winner === m.teamB;
         return '<div class="bracket-match' + (live ? ' live' : '') + '">' +
-          '<div class="bm-round">' + (live ? 'LIVE — ' + teamById(m.currentTeam).name.toUpperCase() + ' SHOOTING' : 'FINAL SCORE') + '</div>' +
+          '<div class="bm-round">' +
+            (live ? 'LIVE — ' + teamById(m.currentTeam).name.toUpperCase() + ' SHOOTING' : 'FINAL — ' + (tot.rapid ? 'GOALS' : 'PTS')) +
+            ' <span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span></div>' +
           '<div class="bm-row' + (winA ? ' win' : '') + '">' +
             '<span class="chip" style="background:' + A.primary + '"></span>' +
             '<span class="bm-name">' + A.name.toUpperCase() + '</span>' +
-            '<span class="bm-score">' + tot.a + '</span></div>' +
+            '<span class="bm-score">' + tot.headA + '</span></div>' +
           '<div class="bm-row' + (winB ? ' win' : '') + '">' +
             '<span class="chip" style="background:' + B.primary + '"></span>' +
             '<span class="bm-name">' + B.name.toUpperCase() + '</span>' +
-            '<span class="bm-score">' + tot.b + '</span></div>' +
+            '<span class="bm-score">' + tot.headB + '</span></div>' +
         '</div>';
       }).join('') : '<div class="bracket-empty">No matches created yet</div>';
       return '<div class="bracket-round"><h4>' + rd.label + '</h4>' + cards + '</div>';
@@ -450,17 +455,22 @@
     const tot = TOURNEY.matchTotals(m, rows);
     const cur = teamById(m.currentTeam);
     const nxt = teamById(m.currentTeam === m.teamA ? m.teamB : m.teamA);
+    const unit = tot.rapid ? ' goals' : ' pts';
     host.innerHTML =
-      '<div class="adm-live-head">' + roundLabel(m.round) + ' — LIVE</div>' +
+      '<div class="adm-live-head">' + roundLabel(m.round) +
+        ' <span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span> — LIVE</div>' +
       '<div class="adm-live-grid">' +
         '<div class="adm-live-team' + (m.currentTeam === m.teamA ? ' now' : '') + '">' +
           '<span class="chip" style="background:' + A.primary + '"></span>' + A.name.toUpperCase() +
-          '<b>' + tot.a + '</b><span class="pl">' + tot.playersA + ' player(s)</span></div>' +
+          '<b>' + tot.headA + '</b><span class="pl">' + tot.playersA + ' player(s)' +
+          (tot.rapid ? ' · ' + tot.a + ' pts' : '') + '</span></div>' +
         '<div class="adm-live-team' + (m.currentTeam === m.teamB ? ' now' : '') + '">' +
           '<span class="chip" style="background:' + B.primary + '"></span>' + B.name.toUpperCase() +
-          '<b>' + tot.b + '</b><span class="pl">' + tot.playersB + ' player(s)</span></div>' +
+          '<b>' + tot.headB + '</b><span class="pl">' + tot.playersB + ' player(s)' +
+          (tot.rapid ? ' · ' + tot.b + ' pts' : '') + '</span></div>' +
       '</div>' +
-      '<p class="small">Now shooting: <b>' + cur.name.toUpperCase() + '</b> · Up next: <b>' + nxt.name.toUpperCase() + '</b></p>' +
+      '<p class="small">Winner by <b>' + (tot.rapid ? 'goals' : 'points') + '</b> · Now shooting: <b>' +
+        cur.name.toUpperCase() + '</b> · Up next: <b>' + nxt.name.toUpperCase() + '</b></p>' +
       '<div class="row" style="justify-content:flex-start">' +
         '<button class="btn alt" id="admSwitch" type="button">HAND OVER TO ' + nxt.name.toUpperCase() + '</button>' +
         '<button class="btn danger" id="admClose" type="button">CLOSE MATCH</button>' +
@@ -482,8 +492,8 @@
     const A = teamById(m.teamA), B = teamById(m.teamB);
     TOURNEY.closeMatch(m.id, tot);
     AUDIO.menuSelect();
-    this.admSay('Match closed — ' + A.name + ' ' + tot.a + ' : ' + tot.b + ' ' + B.name +
-      '. Now confirm who advances.', 'ok');
+    this.admSay('Match closed — ' + A.name + ' ' + tot.headA + ' : ' + tot.headB + ' ' + B.name +
+      ' (' + (tot.rapid ? 'goals' : 'points') + '). Now confirm who advances.', 'ok');
     this.refreshAdmin();
     this.syncMatchNotice();
   };
@@ -511,12 +521,14 @@
       }
       actions += '<button class="btn danger tiny" data-del="' + m.id + '">DELETE</button>';
       return '<div class="adm-match' + (m.status === 'live' ? ' live' : '') + '">' +
-        '<div class="am-top"><b>' + roundLabel(m.round) + '</b> · ' +
+        '<div class="am-top"><b>' + roundLabel(m.round) + '</b> ' +
+          '<span class="fmt-badge ' + formatOf(m) + '">' + formatShort(m) + '</span> · ' +
           (m.status === 'live' ? '<span class="live-dot">LIVE</span>' : 'CLOSED') +
           (tie ? ' · <span class="tie">DRAW — pick who advances</span>' : '') +
           (decided ? ' · advances: <b>' + teamById(m.winner).name.toUpperCase() + '</b>' : '') +
         '</div>' +
-        '<div class="am-score">' + A.name.toUpperCase() + ' <b>' + tot.a + '</b> — <b>' + tot.b + '</b> ' + B.name.toUpperCase() + '</div>' +
+        '<div class="am-score">' + A.name.toUpperCase() + ' <b>' + tot.headA + '</b> — <b>' + tot.headB + '</b> ' +
+          B.name.toUpperCase() + ' <span class="am-unit">' + (tot.rapid ? 'goals' : 'pts') + '</span></div>' +
         '<div class="am-actions">' + actions + '</div>' +
       '</div>';
     }).join('');
@@ -597,11 +609,13 @@
 
     click('btnAdmCreate', () => {
       const a = $('admTeamA').value, b = $('admTeamB').value, r = $('admRound').value;
+      const fmt = $('admFormat') ? $('admFormat').value : 'kicks';
       if (!a || !b) { this.admSay('Pick both teams first.', 'warn'); return; }
       try {
-        TOURNEY.createMatch(a, b, r);
+        TOURNEY.createMatch(a, b, r, fmt);
         AUDIO.menuSelect();
-        this.admSay(roundLabel(r) + ' started — ' + teamById(a).name + ' shoots first.', 'ok');
+        const fLabel = fmt === 'rapid' ? '1-min rapid-fire' : '3 free kicks';
+        this.admSay(roundLabel(r) + ' started (' + fLabel + ') — ' + teamById(a).name + ' shoots first.', 'ok');
         this.refreshAdmin();
         this.syncMatchNotice();
       } catch (err) { this.admSay(err.message, 'warn'); }
