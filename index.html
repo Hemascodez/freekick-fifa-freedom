@@ -1621,9 +1621,32 @@ body.playing .mute-global { top: 6px; right: 6px; opacity: .92; }
 .rb-status.waiting { color: #ffcf7a; }
 .rb-status.finished { color: #9b9bc4; }
 
-/* on a small stage the board would swallow the pitch */
+/* On a small stage the board must shrink, never vanish — players still need
+   to see the scores on a phone. */
 @container app (max-width: 620px) {
-  .room-board { display: none !important; }
+  .room-board {
+    width: min(40%, 158px);
+    top: 38px;
+    padding: 3px;
+    max-height: calc(100% - 74px);
+  }
+  .rb-head { font-size: 7px; letter-spacing: .08em; margin-bottom: 3px; }
+  .rb-row {
+    grid-template-columns: 10px 8px 1fr auto;
+    grid-template-areas: "rank chip name nums" ". . status status";
+    gap: 1px 3px;
+    padding: 2px 3px;
+    font-size: 7px;
+  }
+  .rb-nums em { display: none; }          /* drop the "3 left" sub-line */
+  .rb-nums b { font-size: 1.05em; }
+  .rb-status { font-size: 6.5px; letter-spacing: .02em; }
+  .rb-teams span { font-size: 7px; }
+}
+
+@container app (max-width: 430px) {
+  .room-board { width: 46%; }
+  .rb-name em { display: none; }          /* drop the team line, keep the name */
 }
 
 /* ---- final room results ---- */
